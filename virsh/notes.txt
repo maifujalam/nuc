@@ -1,0 +1,10 @@
+Create network:-
+Create a new nat network:
+   a. sudo virsh net-define vm-nat.xml
+   b. sudo virsh net-autostart vm-nat
+   c. sudo virsh net-start vm-nat
+
+Create a new bridge network:
+   a. sudo virsh net-define vm-local.xml
+   b. sudo virsh net-autostart vm-local
+   c. sudo virsh net-start vm-local
