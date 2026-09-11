@@ -1,0 +1,56 @@
+#iperf3
+
+MAC:
+brew install iperf3
+
+Ubuntu:
+sudo apt install iperf3
+
+Create iperf3 server on Ubuntu (NUC):
+iperf3 -s -p 5201 -V
+
+After install iperf3 on ubuntu,it may run as serice: systemctl status iperf3
+
+Create iperf3 client on Mac:
+iperf3 -c 192.168.10.2 -p 5201 -t 30 -P 8 -R -V
+
+[ s: server, c: client, p: port, t: time, P: parallel streams, R: reverse mode, V: verbose ]
+
+MAC to Ubuntu iperf: iperf3 -c 192.168.10.2 -p 5201 -t 15 -V
+
+❯ iperf3 -c 192.168.10.2 -p 5201 -t 15 -V
+iperf 3.21
+Darwin Alam-Mac 25.6.0 Darwin Kernel Version 25.6.0: Fri Jul 31 19:18:43 PDT 2026; root:xnu-12377.161.14~5/RELEASE_ARM64_T8112 arm64
+Control connection MSS 1448
+Time: Fri, 11 Sep 2026 10:05:04 UTC
+Connecting to host 192.168.10.2, port 5201
+      Cookie: f3mvywnzjebnni5z6k5mfcoysk76p7hx3wdl
+      TCP MSS: 1448 (default)
+[  5] local 192.168.10.1 port 52540 connected to 192.168.10.2 port 5201
+Starting Test: protocol: TCP, 1 streams, 131072 byte blocks, omitting 0 seconds, 15 second test, tos 0
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.01   sec  1.32 GBytes  11.2 Gbits/sec  1448   2.68 MBytes
+[  5]   1.01-2.01   sec  1.31 GBytes  11.3 Gbits/sec  271   2.97 MBytes
+[  5]   2.01-3.00   sec  1.31 GBytes  11.3 Gbits/sec    0   3.54 MBytes
+[  5]   3.00-4.00   sec  1.32 GBytes  11.3 Gbits/sec    0   4.03 MBytes
+[  5]   4.00-5.00   sec  1.33 GBytes  11.4 Gbits/sec    0   4.47 MBytes
+[  5]   5.00-6.00   sec  1.32 GBytes  11.3 Gbits/sec    0   4.87 MBytes
+[  5]   6.00-7.01   sec  1.32 GBytes  11.3 Gbits/sec    0   5.24 MBytes
+[  5]   7.01-8.00   sec  1.32 GBytes  11.3 Gbits/sec    0   5.59 MBytes
+[  5]   8.00-9.01   sec  1.32 GBytes  11.3 Gbits/sec    0   5.91 MBytes
+[  5]   9.01-10.01  sec  1.32 GBytes  11.4 Gbits/sec    0   6.22 MBytes
+[  5]  10.01-11.01  sec  1.32 GBytes  11.3 Gbits/sec    0   6.51 MBytes
+[  5]  11.01-12.01  sec  1.32 GBytes  11.3 Gbits/sec    0   6.79 MBytes
+[  5]  12.01-13.01  sec  1.32 GBytes  11.3 Gbits/sec    0   7.06 MBytes
+[  5]  13.01-14.01  sec  1.32 GBytes  11.3 Gbits/sec    0   7.32 MBytes
+[  5]  14.01-15.01  sec  1.32 GBytes  11.3 Gbits/sec    0   7.57 MBytes
+- - - - - - - - - - - - - - - - - - - - - - - - -
+Test Complete. Summary Results:
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-15.01  sec  19.8 GBytes  11.3 Gbits/sec  1719            sender
+[  5]   0.00-15.01  sec  19.8 GBytes  11.3 Gbits/sec                  receiver
+CPU Utilization: local/sender 43.5% (0.5%u/43.0%s), remote/receiver 14.5% (0.5%u/14.0%s)
+rcv_tcp_congestion cubic
+
+iperf Done.
+

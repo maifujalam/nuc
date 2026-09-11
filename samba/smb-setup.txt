@@ -1,0 +1,29 @@
+Setup Samba (SMB) for file sharing beween NUC and M2
+
+On Ubuntu (NUC):
+
+1. sudo apt update
+2. sudo apt install samba
+
+
+3. sudo vi /etc/samba/smb.conf
+[Shared]
+   path = /home/alam/shared
+   browseable = yes
+   read only = no
+   guest ok = no
+
+4. sudo smbpasswd -a alam  [ passwprd is space ]
+5. sudo systemctl restart smbd
+6. mkdir -p /home/alam/shared
+7. sudo chown alam:alam /home/alam/shared
+8. chmod 755 /home/alam/shared
+
+
+On Mac(M2):
+1. Conenct with SMB to the NUC
+2. GO to Finder and press Cmd + K
+smb://192.168.10.2/shared
+
+3. Create soft link between the shared folder and your home directory:
+ln -s /Users/skmaifujalam/IdeaProjects/nuc /Volumes/shared/nuc

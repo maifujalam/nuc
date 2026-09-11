@@ -1,4 +1,4 @@
-# nuc
+## nuc
 This project have code to configure NUC to run as a server for my home server for personal projects.
 
 Preconfigure:

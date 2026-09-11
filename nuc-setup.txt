@@ -1,0 +1,26 @@
+1. shh to nuc: ssh-nuc
+2. Install hypervisor:
+sudo apt update
+sudo apt install qemu-kvm libvirt-daemon-system libvirt-clients virtinst
+
+3. Check the kvm:
+ls -l /dev/kvm
+
+4. Enable the libvirt service:
+sudo systemctl enable --now libvirtd
+
+5. Add your user to the libvirt group:
+sudo usermod -aG libvirt,kvm $USER
+
+6. List vms:
+virsh list --all
+
+NETWORK SETUP
+1. List all network: sudo virsh net-list --all
+2. Stop the defaut network: sudo virsh net-destroy default
+3. Undefine/Remove completely the default network: sudo virsh net-undefine default
+4. Create a new nat network:
+   a. sudo virsh net-define vitbr-nat.xml
+   b. sudo virsh net-autostart vitbr-nat
+   c. sudo virsh net-start vitbr-nat
+
