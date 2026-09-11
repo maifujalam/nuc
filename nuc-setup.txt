@@ -20,7 +20,7 @@ NETWORK SETUP
 2. Stop the defaut network: sudo virsh net-destroy default
 3. Undefine/Remove completely the default network: sudo virsh net-undefine default
 4. Create a new nat network:
-   a. sudo virsh net-define vitbr-nat.xml
-   b. sudo virsh net-autostart vitbr-nat
-   c. sudo virsh net-start vitbr-nat
+   a. sudo virsh net-define vm-nat.xml
+   b. sudo virsh net-autostart vm-nat
+   c. sudo virsh net-start vm-nat
 
