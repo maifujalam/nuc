@@ -15,12 +15,15 @@ sudo usermod -aG libvirt,kvm $USER
 6. List vms:
 virsh list --all
 
-NETWORK SETUP
-1. List all network: sudo virsh net-list --all
-2. Stop the defaut network: sudo virsh net-destroy default
-3. Undefine/Remove completely the default network: sudo virsh net-undefine default
-4. Create a new nat network:
-   a. sudo virsh net-define vm-nat.xml
-   b. sudo virsh net-autostart vm-nat
-   c. sudo virsh net-start vm-nat
+7. Follow the instructions in nuc/virsh/network/notes.txt to create a network.
+
+8. Install vagtant: Use docs
+
+9. Setup sample m using agrant and libvirt provider. Use the following command to create a sample VM:
+
+vagrant plugin install vagrant-libvirt
+
+
+10. Edit ~/.bashrc with :-
+    export VAGRANT_DEFAULT_PROVIDER=libvirt
 

@@ -1,10 +1,5 @@
-Create network:-
-Create a new nat network:
-   a. sudo virsh net-define vm-nat.xml
-   b. sudo virsh net-autostart vm-nat
-   c. sudo virsh net-start vm-nat
+virsh list --all
 
-Create a new bridge network:
-   a. sudo virsh net-define vm-local.xml
-   b. sudo virsh net-autostart vm-local
-   c. sudo virsh net-start vm-local
+FOrce Destroy A VM:
+virsh destroy sample_default   # if it’s running
+virsh undefine sample_default  # remove definition

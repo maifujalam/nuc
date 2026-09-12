@@ -1,0 +1,73 @@
+Create network:-
+1. List networks:
+virsh net-list --all
+2. Create a new nat network:
+   a. sudo virsh net-define vm-nat.xml
+   b. sudo virsh net-autostart vm-nat
+   c. sudo virsh net-start vm-nat
+
+Create a new bridge network:
+   a. sudo virsh net-define vm-local.xml
+   b. sudo virsh net-autostart vm-local
+   c. sudo virsh net-start vm-local
+
+sudo virsh -c qemu:///system list --all
+vagrant global-status
+vagrant global-status --prune
+
+
+3. Make MAC pinagle to NUC VMS:
+    a. Add route to the MAC: sudo route -n add -net 192.168.100.0/24 192.168.10.2
+    b. Validate the route:  netstat -rn | grep 192.168.100
+
+        On VM of the NUC[Important]:
+        So,when the VM receives the packet from the MAC, it will forward it to the NUC, which will then forward it to the MAC.
+
+        sudo apt install iptables-persistent net-tools
+        sudo netfilter-persistent save
+
+        Anable IPv4 forwarding on the NUC VM:
+        cat /proc/sys/net/ipv4/ip_forward
+
+        sudo tee /etc/sysctl.d/99-vm-routing.conf <<'EOF'
+        net.ipv4.ip_forward = 1
+        EOF
+
+    c. On the NUC VM, add a route to the MAC network via the bridge interface (eth1):
+    sudo ip route add 192.168.10.0/24 via 192.168.100.1 dev eth1  [ Temporary add ]
+    ip route get 192.168.10.1  [ Validate the route,it shpuld be:  192.168.10.1 via 192.168.100.1 dev eth1 src 192.168.100.10 uid 1000  ]
+
+    sudo sysctl --system
+
+    Permanent route add to the MAC network via the bridge interface (eth1):
+
+    sudo tee /etc/netplan/99-vm-routing.yaml > /dev/null <<'EOF'
+    network:
+      version: 2
+      ethernets:
+        eth1:
+          routes:
+            - to: 192.168.10.0/24
+              via: 192.168.100.1
+    EOF
+
+    Description:
+    We are overriding the default route (on nuc vm),in which, if any packet receied on VM from MAC, it used to forward via eth0,which is the NAT Interface.
+    We dont wat to forward to eth0,but rather frward to eth1, which is the bridge interface, so that it can reach back to the MAC.
+
+    vagrant@ubuntu2204:~$ route -n
+    Kernel IP routing table
+    Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+    0.0.0.0         192.168.50.1    0.0.0.0         UG    100    0        0 eth0
+    192.168.10.0    192.168.100.1   255.255.255.0   UG    0      0        0 eth1  <== Should be present
+    192.168.50.0    0.0.0.0         255.255.255.0   U     100    0        0 eth0
+    192.168.50.1    0.0.0.0         255.255.255.255 UH    100    0        0 eth0
+    192.168.100.0   0.0.0.0         255.255.255.0   U     0      0        0 eth1
+
+So, any packet want to reach to 192.168.10.0/24 network, it should be forwarded to 192.168.100.1 through eth1
+
+4. On NUC:
+sudo iptables -I FORWARD 1 -i thunderbolt0 -o vm-local -s 192.168.10.0/24 -d 192.168.100.0/24 -j ACCEPT
+sudo iptables -I FORWARD 1 -i vm-local -o thunderbolt0 -s 192.168.100.0/24 -d 192.168.10.0/24 -j ACCEPT
+sudo netfilter-persistent save
+sudo netfilter-persistent reload
