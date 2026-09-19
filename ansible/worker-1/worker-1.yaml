@@ -1,0 +1,15 @@
+---
+- hosts: k8s-worker-1
+  become: false
+  vars:
+    PROJECT_PATH: nuc # File will be  created at home directory
+    KUBERNETES_MAJOR_VERSION: v1.37
+    KUBERNETES_VERSION: 1.37.0  # add 'v' in at prefix whenever required.
+    USER: vagrant
+    MASTER_NODE_IP: 192.168.100.10
+    PACKAGE_DIRECTORY: packages
+    WORKER_NODE_IP: 192.168.100.11
+  roles:
+    - download-packages
+    - configure_node
+    - bootstrap_k8s_worker

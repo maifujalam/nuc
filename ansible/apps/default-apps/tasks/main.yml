@@ -1,0 +1,5 @@
+---
+# tasks file for default-apps
+- name: Install default apps
+  ansible.builtin.include_tasks: default_apps.yaml
+  tags: [kubeconfig]

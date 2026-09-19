@@ -1,0 +1,37 @@
+- name: Force Remove kubernetes repo
+  become: true
+  file:
+    path: /etc/apt/sources.list.d/kubernetes.list.list
+    state: absent
+
+- name: Update os with apt update
+  become: true
+  apt:
+    update_cache: true
+
+- name: Update os with apt upgrade
+  become: true
+  apt:
+    upgrade: yes
+
+- name: Install packages
+  become: true
+  apt:
+    name: "{{item}}"
+    state: present
+  with_items :
+    - git
+    - curl
+    - vim
+    - build-essential
+    - wget
+    - unzip
+    - ansible-core
+    - tree
+    - apt-transport-https
+    - gpg
+    - socat
+    - ca-certificates
+    - containerd
+    - net-tools
+    - apt-transport-https

@@ -1,0 +1,26 @@
+- name: Make the directory present
+  file:
+    path: /home/{{USER}}/{{PROJECT_PATH}}/k8s/v{{KUBERNETES_VERSION}}
+    state: directory
+
+- name: Copy worker join templates
+  template:
+    src: join-default-worker-1.yaml.j2
+    dest: /home/{{USER}}/{{PROJECT_PATH}}/k8s/v{{KUBERNETES_VERSION}}/join-default-worker-1.yaml
+
+- name: Reset worker kubernetes
+  become: true
+  shell: kubeadm reset --force
+
+- name: Delete all exited containers.
+  become: true
+  shell: crictl rm  -all
+
+- name: Remove old kubeconfig files.
+  become: true
+  shell: rm /etc/kubernetes/* -rfv
+
+- name: Join cluster
+  become: true
+  shell:  kubeadm join --config /home/{{USER}}/{{PROJECT_PATH}}/k8s/v{{KUBERNETES_VERSION}}/join-default-worker-1.yaml
+

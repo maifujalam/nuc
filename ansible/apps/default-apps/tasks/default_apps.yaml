@@ -1,0 +1,244 @@
+- name: Check if calico already installed
+  shell: helm list -A | grep calico
+  register: r2
+  ignore_errors: true
+
+#- name: Add helm chart repos
+#  shell: |
+#    helm repo add projectcalico https://docs.tigera.io/calico/charts;
+#    helm repo add cert-manager https://charts.jetstack.io;
+#    helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx;
+#    helm repo add argo https://argoproj.github.io/argo-helm;
+#    helm repo update;
+#  ignore_errors: true
+
+- name: Clone repo
+  shell: cd;rm -rfv {{PROJECT_PATH}}; git clone https://github.com/maifujalam/{{PROJECT_PATH}}.git
+  ignore_errors: true
+
+- name: Install calico tigera CIDRs
+  shell: helm template calico-crds projectcalico/crd.projectcalico.org.v1 --version v3.32.1 | kubectl apply --server-side -f -
+
+- name: Install calico
+  kubernetes.core.helm:
+    name: calico
+    chart_ref: projectcalico/tigera-operator
+    release_namespace: tigera-operator
+    create_namespace: true
+    chart_version: v3.32.1
+  when: r2.rc != 0
+
+#- name: Install cert-manager
+#  kubernetes.core.helm:
+#    name: cert-manager
+#    chart_ref: cert-manager/cert-manager
+#    release_namespace: cert-manager
+#    create_namespace: true
+#    chart_version: v1.21.0
+#    values:
+#      global:
+#        tolerations:
+#          - key: "node-role.kubernetes.io/control-plane"
+#            operator: "Exists"
+#            effect: "NoSchedule"
+#      crds:
+#        enabled: true
+#
+# - name: Install self signed certs
+#   shell: kubectl apply -f /home/{{USER}}/{{PROJECT_PATH}}/k8s/{{KUBERNETES_VERSION}}/manifests/cert-manager/self-sign-issuer.yaml
+
+- name: debug vault
+  debug:
+    msg: "ADMIN_PASSWORD={{ ADMIN_PASSWORD }}"
+
+- name: Recreate route53-credentials-secret
+  kubernetes.core.k8s:
+    state: present
+    namespace: cert-manager
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: route53-credentials-secret
+      type: Opaque
+      stringData:
+        access-key-id: "{{ ACCESS_KEY_ID }}"
+        secret-access-key: "{{ SECRET_ACCESS_KEY }}"
+
+#- name: Copy the cluster issuer template
+#  template:
+#    src: templates/prod-cluster-issuer-llt.yaml.j2
+#    dest: /home/{{USER}}/{{PROJECT_PATH}}/k8s/{{KUBERNETES_VERSION}}/prod-cluster-issuer-llt.yaml
+#
+#- name: Copy the wildcard certificate template
+#  template:
+#    src: templates/wildcard-certificate.yaml.j2
+#    dest: /home/{{USER}}/{{PROJECT_PATH}}/k8s/{{KUBERNETES_VERSION}}/wildcard-certificate.yaml
+
+#- name: Kubernertes create cluster issuer # noqa: no-changed-when
+#  shell: kubectl apply -f /home/{{USER}}/{{PROJECT_PATH}}/k8s/{{KUBERNETES_VERSION}}/prod-cluster-issuer-llt.yaml
+#
+#- name: Kubernertes create wildcard certificate
+#  shell: kubectl apply -f /home/{{USER}}/{{PROJECT_PATH}}/k8s/{{KUBERNETES_VERSION}}/wildcard-certificate.yaml
+
+#- name: Check if ingress-nginx already installed
+#  shell: helm list -A | grep ingress-nginx
+#  register: r4
+#  ignore_errors: true
+
+# IMPORTANT: INSTALL ISTIO HERE.
+
+#- name: Install ingress-nginx
+#  kubernetes.core.helm:
+#    name: ingress-nginx
+#    chart_ref: ingress-nginx/ingress-nginx
+#    release_namespace: ingress-nginx
+#    create_namespace: true
+#    chart_version: 4.15.1
+#    values:
+#      controller:
+#        nodeSelector:
+#          kubernetes.io/hostname: master
+#        tolerations:
+#          - key: "node-role.kubernetes.io/control-plane"
+#            operator: "Exists"
+#            effect: "NoSchedule"
+#        service:
+#          type: NodePort
+#          nodePorts:
+#            http: 32080
+#            https: 32443
+#        extraArgs:
+#          default-ssl-certificate: "cert-manager/wildcard-certificate-secret-prod"
+
+
+- name: Install argo-cd
+  kubernetes.core.helm:
+    name: argo-cd
+    chart_ref: argo/argo-cd
+    release_namespace: argo-cd
+    create_namespace: true
+    chart_version: 10.1.3
+    values:
+      installCRDs: true
+      global:
+        domain: argocd.maifuj.com
+      configs:
+        params:
+          server.insecure: true
+        secret:
+          argocdServerAdminPassword: "{{ ARGOCD_ADMIN_PASSWORD_HASH }}"
+      applicationSet:
+        priorityClassName: "system-cluster-critical"
+        tolerations:
+          - key: "node-role.kubernetes.io/control-plane"
+            operator: "Exists"
+            effect: "NoSchedule"
+        nodeSelector:
+          kubernetes.io/hostname: master
+      controller:
+        priorityClassName: "system-cluster-critical"
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1.5Gi
+          requests:
+            cpu: 100m
+            memory: 1.5Gi
+        service:
+          type: NodePort
+          nodePorts:
+            http: 32080
+            https: 32443
+        tolerations:
+          - key: "node-role.kubernetes.io/control-plane"
+            operator: "Exists"
+            effect: "NoSchedule"
+        nodeSelector:
+          kubernetes.io/hostname: master
+      dex:
+        enabled: false
+        tolerations:
+          - key: "node-role.kubernetes.io/control-plane"
+            operator: "Exists"
+            effect: "NoSchedule"
+        nodeSelector:
+          kubernetes.io/hostname: master
+      redis:
+        priorityClassName: "system-cluster-critical"
+        tolerations:
+          - key: "node-role.kubernetes.io/control-plane"
+            operator: "Exists"
+            effect: "NoSchedule"
+        nodeSelector:
+          kubernetes.io/hostname: master
+      repoServer:
+        priorityClassName: "system-cluster-critical"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 700Mi
+          limits:
+            memory: 750Mi
+            cpu: 500m
+        tolerations:
+          - key: "node-role.kubernetes.io/control-plane"
+            operator: "Exists"
+            effect: "NoSchedule"
+        nodeSelector:
+          kubernetes.io/hostname: master
+      server:
+        priorityClassName: "system-cluster-critical"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 150Mi
+            cpu: 500m
+        ingress:
+          enabled: false
+          ingressClassName: nginx
+          annotations:
+            kubernetes.io/ingress.class: nginx
+            nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+            nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+        tolerations:
+          - key: "node-role.kubernetes.io/control-plane"
+            operator: "Exists"
+            effect: "NoSchedule"
+        nodeSelector:
+          kubernetes.io/hostname: master
+      notifications:
+        tolerations:
+          - key: "node-role.kubernetes.io/control-plane"
+            operator: "Exists"
+            effect: "NoSchedule"
+        nodeSelector:
+          kubernetes.io/hostname: master
+
+- name: Copy kubeconfig file
+  ansible.builtin.fetch:
+    src: /home/ubuntu/.kube/config
+    dest: "{{ KUBECONFIG_PATH }}"
+    flat: yes
+  tags: [kubeconfig]
+
+- name: Update kubeconfig with MASTER_IP
+  ansible.builtin.replace:
+    path: "{{ KUBECONFIG_PATH }}"
+    regexp: 'https://master:6443'
+    replace: "https://{{ MASTER_NODE_IP }}:6443"
+  tags: [kubeconfig]
+
+- name: ArgoCD login # noqa: no-changed-when
+  ansible.builtin.shell: "argocd login argocd.maifuj.com --username admin --password {{ ADMIN_PASSWORD }} --insecure"
+  tags: [kubeconfig]
+
+- name: Add argocd node to the cluster
+  ansible.builtin.shell: argocd cluster add kubernetes-admin@local-k8s --upsert --insecure --yes --label cluster-name=dev --name dev --kubeconfig {{ KUBECONFIG_PATH }}  --grpc-web
+  tags: [kubeconfig]
+
+- name: Install Default Apps
+  shell: kubectl apply -f /home/{{USER}}/{{PROJECT_PATH}}/k8s/{{KUBERNETES_VERSION}}/bootstrap/
+  tags: [kubeconfig]

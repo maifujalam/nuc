@@ -1,0 +1,29 @@
+
+- name: Create ansible directory
+  become: true
+  file:
+    path: /etc/ansible/
+    state: directory
+    mode: "777"
+
+- name: "Pre-pull kubernetes images v{{ KUBERNETES_VERSION }} "
+  become: true
+  shell: bash /home/{{USER}}/{{PROJECT_PATH}}/k8s/v{{KUBERNETES_VERSION}}/5_kubernetes_images.sh
+
+- name: Configure helm
+  become: true
+  shell: bash /home/{{USER}}/{{PROJECT_PATH}}/k8s/v{{KUBERNETES_VERSION}}/8_install_helm.sh
+
+- name: "Make /etc/hosts entry for mater node to ip {{MASTER_NODE_IP}}"
+  become: true
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^master='
+    line: "{{MASTER_NODE_IP}} master"
+    state: present
+
+- name: Update hostname
+  become: true
+  hostname:
+    name: master
+

@@ -1,0 +1,144 @@
+- name: Install VM auto-start/stop service
+  hosts: localhost
+  become: yes
+
+  vars:
+    vm_user: alam
+    vm_root_dirs:
+      - /home/alam/projects/nuc/virsh/vms
+
+  tasks:
+
+    - name: Create VM auto-start/stop script
+      copy:
+        dest: /usr/local/bin/vm-autostart.sh
+        owner: root
+        group: root
+        mode: '0755'
+        content: |
+          #!/bin/bash
+
+          set -u
+
+          ACTION="${1:-}"
+
+          VM_DIRS=(
+            {% for dir in vm_root_dirs %}
+            "{{ dir }}"
+            {% endfor %}
+          )
+
+          log() {
+            echo "$(date '+%Y-%m-%d %H:%M:%S') $*"
+          }
+
+          if [[ "$ACTION" != "start" && "$ACTION" != "stop" ]]; then
+            log "ERROR: Invalid action: $ACTION"
+            exit 1
+          fi
+
+          log "Received $ACTION action"
+
+          for DIR in "${VM_DIRS[@]}"; do
+
+            if [[ ! -d "$DIR" ]]; then
+              log "VM directory does not exist: $DIR"
+              continue
+            fi
+
+            for SUB in "$DIR"/*; do
+
+              if [[ ! -d "$SUB" ]]; then
+                continue
+              fi
+
+              if [[ ! -f "$SUB/Vagrantfile" ]]; then
+                continue
+              fi
+
+              VM_NAME="$(basename "$SUB")"
+
+              log "Processing VM: $VM_NAME"
+              log "Working directory: $SUB"
+
+              cd "$SUB" || {
+                log "ERROR: Cannot change directory to $SUB"
+                continue
+              }
+
+              if [[ "$ACTION" == "start" ]]; then
+
+                log "Starting VM: $VM_NAME"
+
+                if vagrant up --provider=libvirt; then
+                  log "Started VM: $VM_NAME"
+                else
+                  log "ERROR: Failed to start VM: $VM_NAME"
+                fi
+
+              elif [[ "$ACTION" == "stop" ]]; then
+
+                log "Stopping VM: $VM_NAME"
+
+                if vagrant halt; then
+                  log "Stopped VM: $VM_NAME"
+                else
+                  log "ERROR: Failed to stop VM: $VM_NAME"
+                fi
+
+              fi
+
+            done
+          done
+
+          log "VM $ACTION operation completed"
+
+    - name: Create systemd service
+      copy:
+        dest: /etc/systemd/system/vm-autostart.service
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=Auto start/stop all Vagrant/libvirt VMs
+
+          Wants=network-online.target
+          After=network-online.target libvirtd.service local-fs.target
+
+          [Service]
+          Type=oneshot
+
+          User={{ vm_user }}
+          Group={{ vm_user }}
+
+          Environment="HOME=/home/{{ vm_user }}"
+          Environment="USER={{ vm_user }}"
+          Environment="LOGNAME={{ vm_user }}"
+          Environment="VAGRANT_HOME=/home/{{ vm_user }}/.vagrant.d"
+          Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+
+          ExecStart=/usr/local/bin/vm-autostart.sh start
+          ExecStop=/usr/local/bin/vm-autostart.sh stop
+
+          StandardOutput=journal
+          StandardError=journal
+
+          RemainAfterExit=yes
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Enable VM auto-start service
+      ansible.builtin.systemd:
+        name: vm-autostart.service
+        enabled: yes
+
+    - name: Start VM auto-start service
+      ansible.builtin.systemd:
+        name: vm-autostart.service
+        state: started
