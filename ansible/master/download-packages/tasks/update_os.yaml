@@ -1,8 +1,19 @@
-- name: Force Remove kubernetes repo
+- name: Remove Kubernetes repos
   become: true
   file:
-    path: /etc/apt/sources.list.d/kubernetes.list.list
+    path: "{{ item }}"
     state: absent
+  loop:
+    - /etc/apt/sources.list.d/kubernetes.list
+    - /etc/apt/sources.list.d/k8s.list
+    - /etc/apt/sources.list.d/isv:kubernetes:core:stable:v1.37.list
+    - /etc/apt/sources.list.d/pkgs_k8s_io_core_stable_v1_37_deb.list
+    - /etc/apt/sources.list.d/*k8s*.list
+
+
+- name: Remove the cache index
+  become: true
+  shell: rm -rfv /var/lib/apt/lists/*
 
 - name: Update os with apt update
   become: true
