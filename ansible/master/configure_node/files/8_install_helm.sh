@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION="v4.2.3"
+VERSION="v3.21.0"
 printf "Installing Helm $VERSION\n"
 
 if [[ ! -f /tmp/helm-$VERSION-linux-amd64.tar.gz ]]; then

@@ -16,6 +16,8 @@ nodeRegistration:
   imagePullPolicy: IfNotPresent
   name: master
   taints: null
+skipPhases:
+  - addon/kube-proxy   # Skip kube-proxy installation, we will install it is replaced by cilium
 ---
 # imageRepository: It will be registry.k8s.io NOT k8s.gcr.io
 apiVersion: kubeadm.k8s.io/v1beta4
@@ -45,8 +47,3 @@ scheduler: {}
 kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
 cgroupDriver: systemd
----
-apiVersion: kubeadm.k8s.io/v1beta4
-kind: InitConfiguration
-skipPhases:
-  - addon/kube-proxy
