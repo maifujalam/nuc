@@ -1,0 +1,36 @@
+deployment:
+  resources:
+    limits:
+      memory: 100Mi
+    requests:
+      memory: 50Mi
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/name: hello-kubernetes
+ingress:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+  configured: true
+  enabled: true
+  extraPaths: ''
+  hosts:
+  - helloworld.maifuj.com
+  ingressClassName: nginx
+  issuer:
+    name: letsencrypt-prod
+    scope: cluster
+  labels: {}
+  path: /
+  pathPrefix: ''
+  pathType: Prefix
+  rewritePath: false
+  secretName: helloworld-secret
+message: Hi Alam..
+service:
+  externalPort: 443
+  port: 8080
+  type: ClusterIP

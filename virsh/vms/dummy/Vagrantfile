@@ -1,0 +1,76 @@
+IMAGE       = "generic/ubuntu2204"
+BOX_VERSION = "4.3.12"
+NAME        = "dummy"
+CPU         = 2
+MEMORY      = 4096
+IP_WORKER   = "192.168.100.20"
+ADDITIONAL_DISK_COUNT_WORKER = 0
+ADDITIONAL_DISK_SIZE = "10G"
+
+Vagrant.configure("2") do |config|
+  config.vagrant.plugins = ['vagrant-timezone']
+  config.timezone.value = :host
+  config.vm.box_check_update = false
+
+  config.vm.define NAME do |vm|
+    vm.vm.hostname = NAME
+    vm.vm.box = IMAGE
+    vm.vm.box_version = BOX_VERSION
+
+    vm.vm.provider :libvirt do |libvirt|
+      libvirt.driver = "kvm"
+      libvirt.memory = MEMORY
+      libvirt.cpus   = CPU
+      libvirt.mgmt_attach = false
+
+      # Disable graphics completely
+      libvirt.graphics_type = "none"
+      libvirt.graphics_autoport = false
+      libvirt.graphics_port = -1
+
+      (1..ADDITIONAL_DISK_COUNT_WORKER).each do |i|
+      dev = "vd#{('b'.ord + i - 1).chr}"   # vdb, vdc, vdd...
+      libvirt.storage :file,
+        :size => ADDITIONAL_DISK_SIZE,
+        :type => "qcow2",
+        :device => dev,
+        :name => "disk-#{i}"
+        end
+    end
+
+    # NAT network
+    vm.vm.network "private_network",
+      type: "dhcp",
+      libvirt__network_name: "vm-nat",
+      libvirt__persistent: true,
+      libvirt__always_destroy: false
+
+    # Static IP network
+    vm.vm.network "private_network",
+      ip: IP_WORKER,
+      libvirt__network_name: "vm-local",
+      libvirt__persistent: true,
+      libvirt__always_destroy: false
+
+    vm.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update -y
+      sudo apt-get upgrade -y
+      sudo apt-get install -y net-tools netplan.io
+
+      sudo tee /etc/sysctl.d/99-vm-routing.conf > /dev/null <<EOF
+net.ipv4.ip_forward = 1
+EOF
+      sudo sysctl --system
+      sudo tee /etc/netplan/99-vm-routing.yaml > /dev/null <<EOF
+network:
+  version: 2
+  ethernets:
+    eth1:
+      routes:
+        - to: 192.168.10.0/24
+          via: 192.168.100.1
+EOF
+      sudo netplan apply
+    SHELL
+  end
+end

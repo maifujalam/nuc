@@ -1,0 +1,50 @@
+# Provide a custom message
+message: ""
+
+# Remember to set service.type=ClusterIP if you are using an ingress
+ingress:
+  configured: false
+  rewritePath: true
+  pathPrefix: ""
+
+service:
+  type: LoadBalancer
+  port: 80
+
+deployment:
+  replicaCount: 2
+  container:
+    image:
+      repository: "paulbouwer/hello-kubernetes"
+      tag: "" # uses chart appVersion if not provided
+      pullPolicy: IfNotPresent
+    port: 8080
+
+  # Currently only linux images on amd64 architecture are supported - support for arm64 and windows/amd64 coming ...
+  nodeSelector:
+    kubernetes.io/os: linux
+    kubernetes.io/arch: amd64
+
+  resources: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  topologySpreadConstraints: []
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  scaleUp:
+    stabilizationWindowSeconds: 10  # Wait for x seconds before scaling up.
+    pods: 1          # add up to 1 pods at a time
+    periodSeconds: 15  # Rate limit for scale out action.At ,ost 1 pod can be added at every 15 seconds.
+  scaleDown:
+    stabilizationWindowSeconds: 300
+    pods: 1          # remove 1 pod at a time
+    periodSeconds: 30
+
+

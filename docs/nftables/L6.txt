@@ -1,0 +1,2 @@
+Set INPUT Defaut drop:
+iftables -P INPUT DROP

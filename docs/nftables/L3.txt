@@ -1,0 +1,54 @@
+Edit Iptables:
+
+sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+
+-A INPUT: Append to the INPUT chain, which handles incoming packets destined for the local system.
+          -A: Append the rule to the botton. (-I: Insert the rule at the top)
+-p tcp: Specify the protocol as TCP (Transmission Control Protocol).
+--dport 22: Match packets that are destined for port 22, which is commonly used for SSH traffic.
+-j ACCEPT: Jump/Action to the ACCEPT target, allowing the matched packets to be accepted and processed by the system.
+
+The Verdict (-j):
+ACCEPT: Allow the packet to pass through the firewall and be processed by the system.
+DROP: Silently discard the packet without notifying the sender.
+REJECT: Reject the packet and notify the sender that it was not accepted.
+
+sudo apt install at
+Flush IP tables after 2 mins:
+echo 'iptables -F' | sudo at now+2min
+Check jobq: atq
+Delete queue job: atrm <job_id>
+
+
+Port validation:
+Open a port:  nc -vl 8080
+Check port connectoon: nc -vz <ip_address> 8080
+
+
+Validate the packets are being accepted or dropped:
+sudo watch iptables -nvL --line-numbers
+
+
+Allow a port through firewall:
+iptables -A INPUT -p tcp --dport 8080 -j ACCEP
+
+Block a port through firewall:
+iptables -A INPUT -p tcp --dport 8080 -j DROP
+
+Remove a rule from firewall:
+iptables -D INPUT -p tcp --dport 8080 -j DROP
+
+Delete a rule by number from firewall:
+iptables -D INPUT <rule_number>
+
+
+Edit a rule in firewall:
+1. List the rules with numbers:  iptables -nvL --line-numbers
+2. Edit a rle from drop to reject: iptables -R INPUT <rule_number> -p tcp --dport 8080 -j REJECT
+
+
+
+
+
+
+

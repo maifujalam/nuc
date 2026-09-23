@@ -1,0 +1,5 @@
+iptables -A INPUT -i eth0 -o eth0 -p tcp --dport 8080 -j ACCEPT
+
+iptables -P INPUT DROP: Here -P is used to set the default policy for the INPUT chain to DROP.
+This means that any incoming packets that do not match any of the rules in the INPUT chain will be dropped by default.
+

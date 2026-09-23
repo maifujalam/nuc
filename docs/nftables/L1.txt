@@ -1,0 +1,24 @@
+sudo iptables -L
+
+PACKET: Network unit contain data and control information.
+It is the fundamental unit of communication over a network.
+A packet typically consists of a header and a payload.
+The header contains control information such as source and destination addresses,
+while the payload contains the actual data being transmitted.
+
+Kernal: The kernel is the core component of an operating system that manages system resources and facilitates communication between hardware and software.
+It handles tasks such as process management, memory management, device drivers, and system calls.
+
+Netfilter: Netfilter is a framework provided by the Linux kernel that allows for packet filtering,
+network address translation (NAT), and other packet mangling operations.
+It provides a set of hooks within the kernel that can be used to intercept and manipulate network packets as they traverse the networking stack.
+
+Chain: A chain is a sequence of rules that are applied to network packets in a specific order.
+Each chain is associated with a specific table and is used to determine the fate of packets that match the rules within that chain.
+Common chains include INPUT, OUTPUT, and FORWARD, which handle incoming, outgoing, and forwarded packets, respectively.
+
+iptables: rule writer.Its just the rules amangement.
+
+netfilter: the firewall hooks.It implement the rules.
+
+rules: the configuration which describes what to do with a packet.
