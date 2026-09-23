@@ -1,2 +1,55 @@
 Set INPUT Defaut drop:
-iftables -P INPUT DROP
+iptables -P INPUT DROP
+
+Save IPTABLES rules:
+iptables-save > /etc/iptables/rules.v4
+
+Load IPTABLES rules:
+iptables-restore < /etc/iptables/rules.v4
+
+
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+
+--------------------------------------------------
+Port forwarding from Bastion to NUC via vpn tunnel:
+On Bastion on AWS:
+a. iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 10.8.0.2:32687 # For any trafic coming to port 80 on Bastion, it will be redirected to popr 32687 on NUC.
+b. iptables -t nat -A POSTROUTING -o tun0 -p tcp -d 10.8.0.2 --dport 32687 -j SNAT --to-source 10.8.0.1
+
+On NUC,to fowrard trafic from nuc tunnel interface to vm bridge interface:
+sudo iptables -t nat -A PREROUTING -i tun0 -p tcp --dport 32687 -j DNAT --to-destination 192.168.100.10:32687
+sudo iptables -t nat -A POSTROUTING -o vm-local -p tcp -d 192.168.100.10 --dport 32687  -j SNAT --to-source 192.168.100.1
+
+Verify each steps:
+a. Client → Bastion:80
+b. client -> Bastion:80 -> Bastion DNAT to 32687 → 10.8.0.2:32687
+c. NUC DNAT 10.8.0.1:32687 → NUC DNAT 10.8.0.2:32687
+d. Forward from NUC to VM interface: 10.8.0.2:32687 (tun0)-> 192.168.100.10:32687 (vm-local)
+e. VM replies → MASQUERADE → NUC → Bastion → Client
+
+Verify Step a:
+on Client(MAC): curl -v http://13.207.12.184:80
+On BAstion (AWS):  sudo tcpdump -ni ens5 tcp port 80  (it should capture packets from client)
+
+Verify Step b:
+on Client(MAC): curl -v http://13.207.12.184:80
+On Bastion (AWS): sudo tcpdump -ni tun0 tcp port 32687  (it should capture packets from client)
+
+Verify Step c:
+on Client(MAC): curl -v http://13.207.12.184:80
+On NUC: sudo tcpdump -ni tun0 tcp port 32687  (it should capture packets from client)
+
+Verify Step d:
+on Client(MAC):  curl -v http://13.207.12.184:80
+On NUC: sudo tcpdump -ni vm-local tcp port 32687  (it should capture packets from client)
+As we found no trafic we need to verify the routing table on NUC:
+On NUC: iptables -t nat -nvL
+Its rejecting all the traffic from tun0 to vm-local interface, we need to add a rule to allow the traffic from tun0 to vm-local interface:
+
+Forward all trafic from tun0 to vm-local: iptables -I FORWARD 1 -i tun0 -o vm-local -j ACCEPT [ Main]
+on NUC: sudo iptables -I FORWARD 1 -i tun0 -o vm-local -p tcp --dport 32687 -j ACCEPT
+
+Also make sure the reply traffic is allowed from vm-local to tun0 interface:
+on NUC on specific port : sudo iptables -I FORWARD 1 -i vm-local -o tun0 -p tcp --sport 32687 -j ACCEPT
+Reply back all trafic from tun0 to vm-local: iptables -I FORWARD 1 -i vm-local -o tun0 -j ACCEPT  [Main]
+--------------------------------------------------
