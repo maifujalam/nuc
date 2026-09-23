@@ -24,6 +24,19 @@
       k8sServiceHost: "{{ MASTER_NODE_IP }}"
       k8sServicePort: 6443
 
+- name: Recreate route53-credentials-secret
+  kubernetes.core.k8s:
+    state: present
+    namespace: cert-manager
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: route53-credentials-secret
+      type: Opaque
+      stringData:
+        access-key-id: "{{ ACCESS_KEY_ID }}"
+        secret-access-key: "{{ SECRET_ACCESS_KEY }}"
 
 #- name: Install cert-manager
 #  kubernetes.core.helm:

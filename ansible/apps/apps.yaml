@@ -1,7 +1,7 @@
 - hosts: k8s-master
   become: false
   vars_files:
-    - /home/vagrant/nuc/ansible/apps/default-apps/group_vars/all/vault.yml   # vaulted file
+    - /home/alam/projects/nuc/ansible/apps/default-apps/group_vars/all/vault.yml   # vaulted file
   vars:
     PROJECT_PATH: nuc   # File will be  created at home directory
     KUBERNETES_MAJOR_VERSION: v1.37
