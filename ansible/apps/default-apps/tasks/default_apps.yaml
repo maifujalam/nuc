@@ -24,6 +24,17 @@
       k8sServiceHost: "{{ MASTER_NODE_IP }}"
       k8sServicePort: 6443
 
+- name: Install Python dependencies required by Kubernetes Ansible modules
+  ansible.builtin.apt:
+    name:
+      - python3-pip
+      - python3-kubernetes
+      - python3-yaml
+      - python3-jsonpatch
+    state: present
+    update_cache: true
+  become: true
+
 - name: Recreate route53-credentials-secret
   kubernetes.core.k8s:
     state: present
@@ -78,10 +89,6 @@
 #- name: Kubernertes create wildcard certificate
 #  shell: kubectl apply -f /home/{{USER}}/{{PROJECT_PATH}}/k8s/{{KUBERNETES_VERSION}}/wildcard-certificate.yaml
 
-#- name: Check if ingress-nginx already installed
-#  shell: helm list -A | grep ingress-nginx
-#  register: r4
-#  ignore_errors: true
 
 # IMPORTANT: INSTALL ISTIO HERE.
 
@@ -172,6 +179,12 @@
           limits:
             memory: 150Mi
             cpu: 500m
+        service:
+          type: NodePort
+          # -- Server service http port for NodePort service type (only if `server.service.type` is set to "NodePort")
+          nodePortHttp: 31080
+          # -- Server service https port for NodePort service type (only if `server.service.type` is set to "NodePort")
+          nodePortHttps: 31443
         ingress:
           enabled: false
           ingressClassName: nginx
@@ -193,12 +206,56 @@
         nodeSelector:
           kubernetes.io/hostname: master
 
-- name: Copy kubeconfig file
-  ansible.builtin.fetch:
-    src: /home/ubuntu/.kube/config
-    dest: "{{ KUBECONFIG_PATH }}"
-    flat: yes
-  tags: [kubeconfig]
+#- name: make directory at controller (NUC) for kubeconfig file
+#  ansible.builtin.file:
+#    path: "{{ KUBECONFIG_PATH | dirname }}"
+#    state: directory
+#    mode: '0755'
+#  delegate_to: localhost
+#  become: true
+#  tags: [kubeconfig]
+#
+#- name: Copy kubeconfig file to the controller (NUC)
+#  become: true
+#  ansible.builtin.fetch:
+#    src: "/home/vagrant/.kube/config"
+#    dest: "{{ KUBECONFIG_PATH }}"   # It will fail,so I did
+#    flat: yes
+#  tags: [kubeconfig]
+
+#- name: Update kubeconfig with MASTER_IP
+#  ansible.builtin.replace:
+#    path: "{{ KUBECONFIG_PATH }}"
+#    regexp: 'https://master:6443'
+#    replace: "https://{{ MASTER_NODE_IP }}:6443"
+#  tags: [kubeconfig]
+
+- name: ArgoCD login #  argocd login master:31443  --username admin  --password '' --insecure --grpc-web
+  ansible.builtin.shell: |
+    yes | argocd login master:31443 \  
+      --username admin \
+      --password '{{ ADMIN_PASSWORD }}' \
+      --insecure \
+      --grpc-web
+  args:
+    executable: /bin/bash
+  register: argocd_login
+  changed_when: false
+  no_log: true
+  tags:
+    - kubeconfig
+
+- name: Debug ArgoCD login result
+  ansible.builtin.debug:
+    msg: "{{ argocd_login.stdout }}"
+  tags:
+    - kubeconfig
+
+- name: Debug kubeconfig path
+  ansible.builtin.debug:
+    msg: "{{ KUBECONFIG_PATH }}"
+  tags:
+    - kubeconfig
 
 - name: Update kubeconfig with MASTER_IP
   ansible.builtin.replace:
@@ -207,14 +264,29 @@
     replace: "https://{{ MASTER_NODE_IP }}:6443"
   tags: [kubeconfig]
 
-- name: ArgoCD login # noqa: no-changed-when
-  ansible.builtin.shell: "argocd login argocd.maifuj.com --username admin --password {{ ADMIN_PASSWORD }} --insecure"
-  tags: [kubeconfig]
-
-- name: Add argocd node to the cluster
-  ansible.builtin.shell: argocd cluster add kubernetes-admin@local-k8s --upsert --insecure --yes --label cluster-name=dev --name dev --kubeconfig {{ KUBECONFIG_PATH }}  --grpc-web
-  tags: [kubeconfig]
+- name: Add nuc Kubernetes cluster to ArgoCD
+  ansible.builtin.shell: |
+    argocd cluster add kubernetes-admin@nuc-k8s \ 
+      --upsert \
+      --insecure \
+      --yes \
+      --label cluster-name=nuc-k8s \
+      --name nuc-k8s \
+      --kubeconfig "{{ KUBECONFIG_PATH }}" \
+      --grpc-web
+  args:
+    executable: /bin/bash
+  register: argocd_cluster_add
+  changed_when: true
+  no_log: false
+  tags:
+    - kubeconfig
 
 - name: Install Default Apps
-  shell: kubectl apply -f /home/{{USER}}/{{PROJECT_PATH}}/k8s/{{KUBERNETES_VERSION}}/bootstrap/
-  tags: [kubeconfig]
+  ansible.builtin.shell: kubectl apply -f "/home/{{ USER }}/{{ PROJECT_PATH }}/k8s/{{ KUBERNETES_VERSION }}/bootstrap/"
+  args:
+    executable: /bin/bash
+  environment:
+    KUBECONFIG: "{{ KUBECONFIG_PATH }}"
+  tags:
+    - kubeconfig

@@ -12,6 +12,6 @@
     WORKER_1_NODE_IP: 192.168.100.11
     WORKER_2_NODE_IP: 192.168.100.12
     WORKER_3_NODE_IP: 192.168.100.13
-    KUBECONFIG_PATH: "/home/vagrant/.kube/config"
+    KUBECONFIG_PATH: "/home/vagrant/.kube/config" # kubeconfig path in nuc
   roles:
     - default-apps
