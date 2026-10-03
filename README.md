@@ -35,4 +35,5 @@ Preconfigure:
 4. Open Nodeport service of ArgoCD and install Apps in below order:
    - Istio
    - Istio-ingress
+   - metrics-server
   
