@@ -1,0 +1,50 @@
+kind: List
+metadata:
+  name: grafana
+  namespace: grafana
+apiVersion: v1
+items:
+- apiVersion: grafana.integreatly.org/v1beta1
+  kind: Grafana
+  metadata:
+    annotations:
+    labels:
+      dashboards: grafana
+    name: grafana
+    namespace: grafana
+  spec:
+    client:
+      timeout: 5
+    config:
+      analytics:
+        check_for_updates: "false"
+        reporting_enabled: "false"
+      auth:
+        disable_login_form: "false"
+      log:
+        mode: console
+      security:
+        disable_gravatar: "false"
+    deployment:
+      spec:
+        replicas: 1
+        strategy:
+          type: Recreate
+        template:
+          metadata:
+            annotations:
+              vault.security.banzaicloud.io/vault-addr: https://vault-dev.vault.svc.cluster.local:8200
+              vault.security.banzaicloud.io/vault-role: vault-init-readonly
+              vault.security.banzaicloud.io/vault-path: kubernetes-insecure
+              vault.security.banzaicloud.io/vault-skip-verify: "true"
+          spec:
+            containers:
+            - name: grafana
+              securityContext:
+                readOnlyRootFilesystem: false
+              env:
+#                - name: GF_SECURITY_ADMIN_USER
+#                  value: vault:secrets/data/dev/grafana/default#user
+#                - name: GF_SECURITY_ADMIN_PASSWORD
+#                  value: vault:secrets/data/dev/grafana/default#password
+    version: 13.0.1

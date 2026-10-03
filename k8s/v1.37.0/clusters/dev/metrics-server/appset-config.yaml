@@ -1,0 +1,4 @@
+---
+namespace: metrics-server
+chart_name: metrics-server
+chart_version: 3.13.1

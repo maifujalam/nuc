@@ -1,0 +1,4 @@
+---
+namespace: grafana
+chart_name: grafana-operator
+chart_version: 5.24.0

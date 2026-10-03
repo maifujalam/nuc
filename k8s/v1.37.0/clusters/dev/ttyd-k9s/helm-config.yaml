@@ -1,0 +1,36 @@
+image:
+  repository: harbor.maifuj.com/dev-apps/ttyd-k9s
+  tag: 20
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 7681
+
+command:
+  - "ttyd"
+args:
+  - "-c"
+  - "$(USERNAME):$(PASSWORD)"
+  - "--writable"
+  - "-p"
+  - "7681"
+  - "k9s"
+
+extraEnvSecrets:
+  - name: USERNAME
+    secretName: default-ttyd-k9s-secret
+    key: user
+  - name: PASSWORD
+    secretName: default-ttyd-k9s-secret
+    key: password
+
+
+ingress:
+  enabled: false
+  className: nginx
+  hosts:
+    - host: k9s.maifuj.com
+      paths:
+        - path: /
+          pathType: Prefix

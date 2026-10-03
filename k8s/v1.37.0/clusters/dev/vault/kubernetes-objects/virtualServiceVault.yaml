@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: vault-virtual-service
+  namespace: vault
+spec:
+  hosts:
+    - vault.maifuj.com
+  gateways:
+    - istio-ingress/vault-gateway-tls-passthrough
+  tls:
+    - match:
+        - port: 443
+          sniHosts:
+            - vault.maifuj.com
+      route:
+        - destination:
+            host: vault-dev-active.vault.svc.cluster.local
+            port:
+              number: 8200

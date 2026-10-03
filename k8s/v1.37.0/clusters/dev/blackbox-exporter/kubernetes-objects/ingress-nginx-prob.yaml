@@ -1,0 +1,16 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMProbe
+metadata:
+  name: ingress-nginx-prob
+  namespace: blackbox-exporter
+spec:
+  vmProberSpec:
+     url: blackbox-exporter-dev-prometheus-blackbox-exporter.blackbox-exporter.svc.cluster.local:9115
+  module: http_2xx
+  targets:
+    kubernetes:
+      - role: service
+        selector:
+          matchLabels:
+            app.kubernetes.io/name: ingress-nginx
+  interval: 10s

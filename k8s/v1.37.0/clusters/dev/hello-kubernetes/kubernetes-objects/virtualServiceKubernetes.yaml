@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: hello-kubernetes-virtual-service
+  namespace: hello-kubernetes
+spec:
+  hosts: ["hellokubernetes.maifuj.com"]
+  gateways: ["istio-ingress/gateway-https"]
+  http:
+    - route:
+        - destination:
+            host: hello-kubernetes-hello-kubernetes-dev.hello-kubernetes.svc.cluster.local
+            port:
+              number: 8080

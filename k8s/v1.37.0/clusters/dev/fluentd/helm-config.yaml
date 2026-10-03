@@ -1,0 +1,471 @@
+nameOverride: ""
+fullnameOverride: ""
+
+# DaemonSet, Deployment or StatefulSet
+kind: "DaemonSet"
+# azureblob, cloudwatch, elasticsearch7, elasticsearch8, gcs, graylog , kafka, kafka2, kinesis, opensearch
+variant: elasticsearch7
+# # Only applicable for Deployment or StatefulSet
+# replicaCount: 1
+
+image:
+  repository: "fluent/fluentd-kubernetes-daemonset"
+  pullPolicy: "IfNotPresent"
+  tag: "v1.19.3-debian-elasticsearch8-1.1"
+
+## Optional array of imagePullSecrets containing private registry credentials
+## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: null
+
+rbac:
+  create: true
+
+# from Kubernetes 1.25, PSP is deprecated
+# See: https://kubernetes.io/blog/2022/08/23/kubernetes-v1-25-release/#pod-security-changes
+# We automatically disable PSP if Kubernetes version is 1.25 or higher
+podSecurityPolicy:
+  enabled: true
+  annotations: {}
+
+## Security Context policies for controller pods
+## See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for
+## notes on enabling and using sysctls
+##
+podSecurityContext:
+  runAsUser: 0
+  fsGroup: 0
+
+containerSecurityContext:
+  privileged: true
+  # seLinuxOptions:
+  #   type: "spc_t"
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# Configure the livecycle
+# Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
+lifecycle: {}
+#  preStart:
+#    exec:
+#      command: [ "sh", "-c", "ulimit -n 65536" ]
+
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "sleep 20"]
+
+# Configure the livenessProbe
+# Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe:
+  httpGet:
+    path: /metrics
+    port: metrics
+  # initialDelaySeconds: 0
+  # periodSeconds: 10
+  # timeoutSeconds: 1
+  # successThreshold: 1
+  failureThreshold: 5
+
+# Configure the readinessProbe
+# Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+readinessProbe:
+  httpGet:
+    path: /metrics
+    port: metrics
+  # initialDelaySeconds: 0
+  # periodSeconds: 10
+  # timeoutSeconds: 1
+  # successThreshold: 1
+  failureThreshold: 5
+
+resources: {}
+  # requests:
+  #   cpu: 10m
+  #   memory: 128Mi
+  # limits:
+  #   memory: 128Mi
+
+## only available if kind is Deployment
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+  ## see https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-multiple-metrics-and-custom-metrics
+  customRules: []
+    # - type: Pods
+    #   pods:
+    #     metric:
+    #       name: packets-per-second
+    #     target:
+    #       type: AverageValue
+    #       averageValue: 1k
+  ## see https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-configurable-scaling-behavior
+  # behavior:
+  #   scaleDown:
+  #     policies:
+  #       - type: Pods
+  #         value: 4
+  #         periodSeconds: 60
+  #       - type: Percent
+  #         value: 10
+  #         periodSeconds: 60
+
+# priorityClassName: "system-node-critical"
+
+nodeSelector: {}
+
+## Node tolerations for server scheduling to nodes with taints
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+##
+tolerations:
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"
+
+## Affinity and anti-affinity
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}
+
+## Annotations to be added to fluentd DaemonSet/Deployment
+##
+annotations: {}
+
+## Labels to be added to fluentd DaemonSet/Deployment
+##
+labels: {}
+
+## Annotations to be added to fluentd pods
+##
+podAnnotations: {}
+
+## Labels to be added to fluentd pods
+##
+podLabels: {}
+
+## How long (in seconds) a pods needs to be stable before progressing the deployment
+##
+minReadySeconds:
+
+## How long (in seconds) a pod may take to exit (useful with lifecycle hooks to ensure lb deregistration is done)
+##
+terminationGracePeriodSeconds:
+
+## Deployment strategy / DaemonSet updateStrategy
+##
+updateStrategy: {}
+#   type: RollingUpdate
+#   rollingUpdate:
+#     maxUnavailable: 1
+
+## Additional environment variables to set for fluentd pods
+env: []
+  # - name: "FLUENTD_CONF"
+  #   value: "../../../etc/fluent/fluent.conf"
+  # - name: FLUENT_ELASTICSEARCH_HOST
+  #   value: "elasticsearch-master"
+  # - name: FLUENT_ELASTICSEARCH_PORT
+  #   value: "9200"
+
+envFrom: []
+
+#initContainers:
+#  - name: increase-fd-limit
+#    image: busybox
+#    command: [ "sh", "-c", "sysctl -w fs.file-max=1000000 && sysctl -w fs.inotify.max_user_instances=8192" ]
+#    securityContext:
+#      privileged: true
+
+## Name of the configMap containing a custom fluentd.conf configuration file to use instead of the default.
+# mainConfigMapNameOverride: ""
+
+## Name of the configMap containing files to be placed under /etc/fluent/config.d/
+## NOTE: This will replace ALL default files in the aforementioned path!
+# extraFilesConfigMapNameOverride: ""
+
+mountVarLogDirectory: true
+mountDockerContainersDirectory: true
+
+volumes: []
+
+volumeMounts: []
+
+
+extraVolumeMounts:
+  - name: varlog
+    mountPath: /var/log
+  - name: varlibdockercontainers
+    mountPath: /var/lib/docker/containers
+    readOnly: true
+
+extraVolumes:
+  - name: varlog
+    hostPath:
+      path: /var/log
+  - name: varlibdockercontainers
+    hostPath:
+      path: /var/lib/docker/containers
+
+## Only available if kind is StatefulSet
+## Fluentd persistence
+##
+persistence:
+  enabled: false
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 1Gi
+
+## Fluentd service
+##
+service:
+  enabled: true
+  type: "ClusterIP"
+  annotations: {}
+  # loadBalancerIP:
+  # externalTrafficPolicy: Local
+  ports: []
+  # - name: "forwarder"
+  #   protocol: TCP
+  #   containerPort: 24224
+
+## Prometheus Monitoring
+##
+metrics:
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: prometheus-operator
+    namespace: ""
+    namespaceSelector: {}
+    ## metric relabel configs to apply to samples before ingestion.
+    ##
+    metricRelabelings: []
+    # - sourceLabels: [__name__]
+    #   separator: ;
+    #   regex: ^fluentd_output_status_buffer_(oldest|newest)_.+
+    #   replacement: $1
+    #   action: drop
+    ## relabel configs to apply to samples after ingestion.
+    ##
+    relabelings: []
+    # - sourceLabels: [__meta_kubernetes_pod_node_name]
+    #   separator: ;
+    #   regex: ^(.*)$
+    #   targetLabel: nodename
+    #   replacement: $1
+    #   action: replace
+    ## Additional serviceMonitor config
+    ##
+    # jobLabel: fluentd
+    # scrapeInterval: 30s
+    # scrapeTimeout: 5s
+    # honorLabels: true
+
+  prometheusRule:
+    enabled: false
+    additionalLabels: {}
+    namespace: ""
+    rules: []
+    # - alert: FluentdDown
+    #   expr: up{job="fluentd"} == 0
+    #   for: 5m
+    #   labels:
+    #     context: fluentd
+    #     severity: warning
+    #   annotations:
+    #     summary: "Fluentd Down"
+    #     description: "{{ $labels.pod }} on {{ $labels.nodename }} is down"
+    # - alert: FluentdScrapeMissing
+    #   expr: absent(up{job="fluentd"} == 1)
+    #   for: 15m
+    #   labels:
+    #     context: fluentd
+    #     severity: warning
+    #   annotations:
+    #     summary: "Fluentd Scrape Missing"
+    #     description: "Fluentd instance has disappeared from Prometheus target discovery"
+
+## Grafana Monitoring Dashboard
+##
+dashboards:
+  enabled: "true"
+  namespace: ""
+  labels:
+    grafana_dashboard: '"1"'
+
+## Fluentd list of plugins to install
+##
+plugins: []
+# - fluent-plugin-out-http
+
+## Add fluentd config files from K8s configMaps
+##
+configMapConfigs: []
+#  - fluentd-prometheus-conf
+#  - fluentd-systemd-conf
+
+## Fluentd configurations:
+##
+fileConfigs:
+  01_sources.conf: |-
+    ## logs from podman
+    <source>
+      @type tail
+      @id in_tail_container_logs
+      @label @KUBERNETES
+      path /var/log/containers/*.log
+      pos_file /var/log/fluentd-containers.log.pos
+      tag kubernetes.*
+      read_from_head true
+      enable_watch_timer false
+      refresh_interval 60
+      <parse>
+        @type multi_format
+        <pattern>
+          format json
+          time_key time
+          time_type string
+          time_format "%Y-%m-%dT%H:%M:%S.%NZ"
+          keep_time_key false
+        </pattern>
+        <pattern>
+          format regexp
+          expression /^(?<time>[^ ]+) (?<stream>stdout|stderr) [^ ]* (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%z'
+          keep_time_key false
+        </pattern>
+      </parse>
+      emit_unmatched_lines true
+    </source>
+  
+    # expose metrics in prometheus format
+    <source>
+      @type prometheus
+      bind 0.0.0.0
+      port 24231
+      metrics_path /metrics
+    </source>
+
+  02_filters.conf: |-
+    <label @KUBERNETES>
+      <match kubernetes.var.log.containers.fluentd**>
+        @type relabel
+        @label @FLUENT_LOG
+      </match>
+  
+      <filter kubernetes.**>
+        @type kubernetes_metadata
+        @id filter_kube_metadata
+        skip_labels false
+        skip_container_metadata false
+        skip_namespace_metadata true
+        skip_master_url true
+        de_dot true
+        de_dot_separator _
+      </filter>
+  
+      # Flatten nested docker/kubernetes objects
+      <filter kubernetes.**>
+        @type record_transformer
+        enable_ruby true
+        <record>
+          docker_id ${record["docker"] && record["docker"]["container_id"]}
+          kubernetes_container ${record["kubernetes"] && record["kubernetes"]["container_name"]}
+          kubernetes_namespace ${record["kubernetes"] && record["kubernetes"]["namespace_name"]}
+          kubernetes_pod ${record["kubernetes"] && record["kubernetes"]["pod_name"]}
+          kubernetes_host ${record["kubernetes"] && record["kubernetes"]["host"]}
+        </record>
+        remove_keys docker,kubernetes
+      </filter>
+  
+      # Normalize timestamp to ISO8601 without nanoseconds, fallback if missing
+      <filter kubernetes.**>
+        @type record_transformer
+        enable_ruby true
+        <record>
+          @timestamp ${record["@timestamp"] || Time.now.utc.iso8601}
+        </record>
+      </filter>
+  
+      <match **>
+        @type relabel
+        @label @DISPATCH
+      </match>
+    </label>
+
+  03_dispatch.conf: |-
+    <label @DISPATCH>
+      <filter **>
+        @type prometheus
+        <metric>
+          name fluentd_input_status_num_records_total
+          type counter
+          desc The total number of incoming records
+          <labels>
+            tag ${tag}
+            hostname ${hostname}
+          </labels>
+        </metric>
+      </filter>
+
+      <match **>
+        @type relabel
+        @label @OUTPUT
+      </match>
+    </label>
+
+  04_outputs.conf: |-
+    <label @OUTPUT>
+      <match **>
+        @type elasticsearch
+        host "elasticsearch-es-http"
+        port 9200
+        scheme https
+        ssl_verify false
+        user elastic
+        password "lQmFPWcMp3IwWz2lcrd5Hctk"
+  
+        verify_es_version_at_startup false
+        default_elasticsearch_version 8
+        suppress_type_name true
+  
+        logstash_format true
+        logstash_prefix k8s
+        time_key @timestamp
+  
+        template_overwrite false
+        enable_ilm false
+        request_timeout 60s
+        reload_connections true
+        <buffer>
+          @type file
+          path /var/log/fluentd-buffers/k8s.buffer
+          flush_interval 2s
+          retry_max_interval 30
+          retry_forever true
+          chunk_limit_size 2M
+          total_limit_size 4G
+          overflow_action drop_oldest_chunk
+        </buffer>
+      </match>
+    </label>
+
+ingress:
+  enabled: false
+
+#  tls: []
+  # - secretName: fluentd-tls
+  #   hosts:
+  #     - fluentd.example.tld

@@ -1,0 +1,127 @@
+The Vault Secrets Operator (VSO) relies on VaultAuth resources to authenticate with Vault.
+
+Install helm chart for vault-secret-operator
+
+Architecture:-
+1. Make sure vault and vault-secrets-operator is installed in the cluster.
+2. Exec in vault pod.
+3. export vault host: export VAULT_ADDR=https://vault.maifuj.com
+4. vault login with root token: vault login
+5. Check the vault status: vault status
+6. Do one time configuration of vault auth/kubernetes/config with issuer and kubernetes_ca_cert.
+   We are storing all secrets in folder name secrets in vault. So we are enabling kubernetes auth with path secrets.
+
+   a. Enable kubernetes auth: vault auth enable kubernetes
+   b. Configure kubernetes auth [ Not recommended.Either follow this for unsecure k8s connectiom]:
+
+    As per doc:
+    vault write auth/kubernetes/config \
+    kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443"
+
+    $ vault read auth/secrets/config
+    Key                                  Value
+    ---                                  -----
+    disable_iss_validation               true    [ Its disable the ssl validation of issuer]
+    disable_local_ca_jwt                 false
+    issuer                               n/a
+    kubernetes_ca_cert                   n/a
+    kubernetes_host                      https://10.96.0.1:443
+    pem_keys                             []
+    token_reviewer_jwt_set               false
+    use_annotations_as_alias_metadata    false
+    / $
+
+    c. Check the auth: vault auth list
+    d. Validate the auth: vault read auth/kubernetes/config
+
+
+    e. [ Eecommended.Or Follow this for secure k8s connectiom]:
+    We are also creating folder kubernetes (its created by default)  in vault to store all secrets read by k8s.
+
+        a. Enable kubernetes auth: vault auth enable kubernetes
+        b. Configure kubernetes auth:
+        vault write auth/kubernetes/config \
+        kubernetes_host="https://10.96.0.1:443" \
+        kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
+        issuer="https://kubernetes.default.svc.cluster.local"
+
+    f. As per the security best practice,lets go with secret name kubernetes instead of secrets.
+    g. Create a key value secret engine to store the secret datas: vault secrets enable -path=secrets kv-v2
+
+6. In vault, create read-only policy for secretsdata.
+ a. cd tmp
+ b. vi vault-operator-readonly.hcl
+6. Create vault policy: vault policy write vault-operator-readonly vault-operator-readonly.hcl
+7. Create vault role for vault-operator SA:
+
+    Note: Very Strict,only one namespace can access to vault from k8s.
+    vault write auth/kubernetes/role/vault-operator-readonly \
+    bound_service_account_names=vault-secrets-operator \
+    bound_service_account_namespaces=vault-secrets-operator \
+    policies=vault-operator-readonly \
+    audience=vault \
+    ttl=24h
+
+    Note: Slightly relaxed.Recommended. Any SA named vault-secrets-operator in any namespace can access to vault with read-only policy.
+
+    vault write auth/kubernetes/role/vault-operator-readonly \
+    bound_service_account_names=vault-secrets-operator \
+    bound_service_account_namespaces='*' \
+    policies=vault-operator-readonly \
+    audience=vault \
+    ttl=24h
+
+    Note: Very relaxed. Any SA in any namespace can access to vault with read-only policy.
+    vault write auth/kubernetes/role/vault-operator-readonly \
+    bound_service_account_names='*' \
+    bound_service_account_namespaces='*' \
+    policies=vault-operator-readonly
+
+
+   vault read auth/kubernetes/role/vault-operator-readonly
+
+8. Put dummy data to secrets: vault kv put secrets/config username="static-user" password="static-password"
+
+8. Now create vault connection CRD to connect with vault server.
+   By default a default vault connection is created in vault-secrets-operator namespace to use.
+   kubectl get vaultconnection -n vault-secrets-operator
+
+9. Create vault auth CRD to connect with vault server.
+   By default a default vault auth is created in vault-secrets-operator namespace to use.
+   kubectl get vaultauth -n vault-secrets-operator
+
+========= Questions ========
+What are the different ways to consume vault?
+
+Static Secret: Static secrets are the secrets that are stored in vault and can be accessed by the applications.
+These secrets are usually stored in key-value pairs and can be accessed using the vault API or CLI.
+The static secrets can be used for database credentials, API keys, etc.
+
+Vault Auth: Its a dynamic authentication using k8s Service account.
+The application can authenticate with vault using the service account token and get a dynamic secret.
+Here token of SA is tied with vault policy.
+Here,no static credentials is maintaned in the secrets.
+
+
+Whats vault auth?
+
+It tells which service account and its respective role is used to connect with vault and which policy is used to access the vault.
+
+Whats vault connect?
+
+Its a crd describe how the vault server is connected with vault-secrets-operator.
+# k -n vault-secrets-operator get vaultconnection default -o yaml
+
+apiVersion: v1
+items:
+- apiVersion: secrets.hashicorp.com/v1beta1
+  kind: VaultConnection
+  metadata:
+    name: default
+    namespace: vault-secrets-operator
+  spec:
+    address: https://vault.maifuj.com
+    caCertSecretRef: vault-certificate-secret
+    skipTLSVerify: false
+    tlsServerName: vault.maifuj.com
+

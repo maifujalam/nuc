@@ -1,0 +1,51 @@
+deployment:
+  resources:
+    limits:
+      memory: 200Mi
+    requests:
+      cpu: 10m
+      memory: 100Mi
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/name: hello-kubernetes
+ingress:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+  configured: true
+  enabled: false
+  extraPaths: ''
+  hosts:
+  - helloworld.maifuj.com
+  ingressClassName: traefik
+  issuer:
+    name: letsencrypt-prod
+    scope: cluster
+  labels: {}
+  path: /
+  pathPrefix: ''
+  pathType: Prefix
+  rewritePath: false
+  secretName: helloworld-secret
+message: Hi Alam.
+service:
+  externalPort: 443
+  port: 8080
+  type: ClusterIP
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80  # Scale up if its >80 ,and scale down if <80.
+  scaleUp:
+    stabilizationWindowSeconds: 10  # Wait for x seconds before scaling up.
+    pods: 1          # add up to 1 pods at a time
+    periodSeconds: 15  # Rate limit for scale out action.At ,ost 1 pod can be added at every 15 seconds.
+  scaleDown:
+    stabilizationWindowSeconds: 120 # Wait for 2 mins before scale down
+    pods: 1          # remove 1 pod at a time
+    periodSeconds: 30
+

@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: istio-appset
+  namespace: argo-cd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+   - matrix:
+        generators:
+          - git:
+              repoURL: https://github.com/maifujalam/nuc.git
+              revision: main
+              files:
+                - path: k8s/v1.37.0/clusters/*/istio/appset-config.yaml
+          - clusters:
+              selector:
+                matchLabels:
+                  cluster-name: '{{ index .path.segments 3}}'
+  template:
+    metadata:
+      name: '{{ index .path.segments 4}}-{{ index .path.segments 3}}'
+      labels:
+        app: '{{ index .path.segments 4}}'
+        cluster-name: '{{ index .path.segments 3}}'
+    spec:
+      project: dev-project
+      sources:
+        - repoURL: https://istio-release.storage.googleapis.com/charts
+          targetRevision: '{{.chart_version}}'
+          chart: '{{.chart_name}}'
+          helm:
+            valueFiles:
+              - $values/{{.path.path}}/helm-config.yaml
+            skipCrds: true
+        - repoURL: https://github.com/maifujalam/nuc.git
+          targetRevision: main
+          ref: values
+      destination:
+        server: '{{.server}}'
+        namespace: '{{.namespace}}'
+      syncPolicy:
+#         automated:
+#           prune: true
+#           selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true
