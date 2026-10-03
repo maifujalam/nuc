@@ -10,10 +10,10 @@ spec:
    - matrix:
         generators:
           - git:
-              repoURL: https://github.com/maifujalam/k8s_aws_lite.git
+              repoURL: https://github.com/maifujalam/nuc.git
               revision: main
               files:
-                - path: k8s/v1.36.2/clusters/*/istio-ingress/appset-config.yaml
+                - path: k8s/v1.37.0/clusters/*/istio-ingress/appset-config.yaml
           - clusters:
               selector:
                 matchLabels:
@@ -34,12 +34,12 @@ spec:
             valueFiles:
               - $values/{{.path.path}}/helm-config.yaml
             skipCrds: true
-        - repoURL: https://github.com/maifujalam/k8s_aws_lite.git
+        - repoURL: https://github.com/maifujalam/nuc.git
           targetRevision: main
           ref: values
-        - repoURL: https://github.com/maifujalam/k8s_aws_lite.git
+        - repoURL: https://github.com/maifujalam/nuc.git
           targetRevision: main
-          path: k8s/v1.36.2/clusters/dev/{{.namespace}}/kubernetes-objects
+          path: k8s/v1.37.0/clusters/dev/{{.namespace}}/kubernetes-objects
           directory:
             recurse: true
       destination:
