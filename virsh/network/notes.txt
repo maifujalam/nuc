@@ -51,6 +51,8 @@ EOF
           routes:
             - to: 192.168.10.0/24
               via: 192.168.100.1
+            - to: 192.168.1.0/24
+              via: 192.168.100.1
     EOF
 
     Description:
@@ -77,3 +79,36 @@ sudo netfilter-persistent reload
 
 sudo nft insert rule inet filter forward iifname "thunderbolt0" oifname "vm-local" counter accept
 sudo nft insert rule inet filter forward iifname "vm-local" oifname "thunderbolt0" counter accept
+
+Note: to delete a iptable rule of Forward chin:
+  sudo iptables -nvL FORWARD --line-number
+  iptables -D FORWARD <rule_number>
+
+VERY IMPORTANT:
+SWITCH BETWEEN BRIDGE TO WIFI AUTOMATIC: sh nuc/virsh/network/iptables/mac-iptable.sh
+SWITCH BETWEEN BRIDGE TO WIFI MANUAL:
+1. Check the network route: netstat -rn
+2. On mac delete the static route to NUC VM: sudo route -n delete 192.168.100.0/24
+3. Then add the route as below:-
+   a. If using WIFI for connecting NUC: sudo route -n add -net 192.168.100.0/24 192.168.1.69 [ not working because nc need to return back]
+
+
+
+On NUC make sure this rules exist:
+Switch to sudo.
+iptables -nvL FORWARD --line-number
+
+# Wi-Fi -> VM
+iptables -I FORWARD 1 -i wlo1 -o vm-local -s 192.168.1.0/24 -d 192.168.100.0/24 -j ACCEPT
+# VM -> Wi-Fi
+iptables -I FORWARD 2 -i vm-local -o wlo1 -s 192.168.100.0/24 -d 192.168.1.0/24 -j ACCEPT
+
+# Thunderbolt -> VM
+iptables -I FORWARD 3 -i thunderbolt0 -o vm-local -s 192.168.10.0/24 -d 192.168.100.0/24 -j ACCEPT
+# VM -> Thunderbolt replies
+iptables -I FORWARD 4 -i vm-local -o thunderbolt0 -s 192.168.100.0/24 -d 192.168.10.0/24 -j ACCEPT
+
+# VPN -> VM
+iptables -I FORWARD 5 -i tun0 -o vm-local -j ACCEPT
+# VM -> VPN replies
+iptables -I FORWARD 6 -i vm-local -o tun0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
