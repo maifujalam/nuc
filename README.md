@@ -28,4 +28,11 @@ Preconfigure:
     - Password: (leave blank)
   - Conenct with Windows App (form MAC) with user alam and no password.Screen sharing should work fine.
 
+==== Setup K8s cluster on NUC ====
+1. Run ansible playbook for master setup: k8s_aws_lite/ansible/master/master.yaml
+2. Run ansible playbook for worker-{1,2,3} setup: k8s_aws_lite/ansible/worker-{1,2,3}/worker{1,2,3}.yaml
+3. Run Defaault app(CNI,ArgoCD) setup playbook: k8s_aws_lite/ansible/apps/apps.yaml
+4. Open Nodeport service of ArgoCD and install Apps in below order:
+   - Istio
+   - 
   

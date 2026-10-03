@@ -8,17 +8,17 @@ spec:
   goTemplateOptions: ["missingkey=error"]
   generators:
   - git:
-      repoURL: https://github.com/maifujalam/k8s_aws_lite.git
+      repoURL: https://github.com/maifujalam/nuc.git
       revision: main
       directories:
-        - path: "k8s/v1.36.2/common/*"
+        - path: "k8s/v1.37.0/common/*"
   template:
     metadata:
       name: 'app-of-apps-{{ .path.basename }}'
     spec:
       project: dev-project
       source:
-        repoURL: https://github.com/maifujalam/k8s_aws_lite.git
+        repoURL: https://github.com/maifujalam/nuc.git
         targetRevision: main
         path: '{{.path.path}}'
       destination:
