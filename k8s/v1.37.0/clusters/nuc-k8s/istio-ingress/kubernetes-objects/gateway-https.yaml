@@ -5,10 +5,10 @@ metadata:
   namespace: istio-ingress
 spec:
   selector:
-    istio: ingress-dev
+    istio: ingress-nuc-k8s
   servers:
     - port:
-        number: 443
+        number: 8443
         name: https
         protocol: HTTPS
       hosts:
@@ -17,7 +17,7 @@ spec:
         mode: SIMPLE
         credentialName: wildcard-certificate-secret
     - port:
-        number: 80
+        number: 8080
         name: http
         protocol: HTTP
       hosts:
