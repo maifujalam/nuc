@@ -5,7 +5,7 @@ metadata:
   namespace: istio-ingress
 spec:
   selector:
-    istio: ingress-dev
+    istio: ingress--nuc-k8s
   servers:
     - port:
         number: 443
