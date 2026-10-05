@@ -44,8 +44,6 @@ sysctl -w net.ipv4.ip_forward=1
 $IPTABLES -I FORWARD 1 \
     -i wlo1 \
     -o vm-local \
-    -s 192.168.1.0/24 \
-    -d 192.168.100.0/24 \
     -m comment --comment "WiFi to VM network" \
     -j ACCEPT
 
@@ -53,8 +51,6 @@ $IPTABLES -I FORWARD 1 \
 $IPTABLES -I FORWARD 2 \
     -i vm-local \
     -o wlo1 \
-    -s 192.168.100.0/24 \
-    -d 192.168.1.0/24 \
     -m comment --comment "VM network to WiFi" \
     -j ACCEPT
 
@@ -67,8 +63,6 @@ $IPTABLES -I FORWARD 2 \
 $IPTABLES -I FORWARD 3 \
     -i thunderbolt0 \
     -o vm-local \
-    -s 192.168.10.0/24 \
-    -d 192.168.100.0/24 \
     -m comment --comment "Thunderbolt to VM network" \
     -j ACCEPT
 
@@ -76,8 +70,6 @@ $IPTABLES -I FORWARD 3 \
 $IPTABLES -I FORWARD 4 \
     -i vm-local \
     -o thunderbolt0 \
-    -s 192.168.100.0/24 \
-    -d 192.168.10.0/24 \
     -m comment --comment "VM network to Thunderbolt" \
     -j ACCEPT
 
@@ -97,7 +89,6 @@ $IPTABLES -I FORWARD 5 \
 $IPTABLES -I FORWARD 6 \
     -i vm-local \
     -o tun0 \
-    -m conntrack --ctstate ESTABLISHED,RELATED \
     -j ACCEPT \
     -m comment --comment "VM network to OpenVPN"
 

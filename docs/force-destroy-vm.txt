@@ -1,0 +1,28 @@
+vagrant global-status --prune
+virsh destroy master_master
+virsh undefine master_master --remove-all-storage --nvram
+sudo virsh vol-delete master_master-vdb.qcow2 --pool default
+
+
+
+
+alam@ALAM-NUC:~/projects/nuc/virsh/vms/master$ sudo virsh pool-list
+ Name      State    Autostart
+-------------------------------
+ default   active   no
+
+alam@ALAM-NUC:~/projects/nuc/virsh/vms/master$ sudo virsh vol-list default
+ Name                                                               Path
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+ dummy_dummy.img                                                    /var/lib/libvirt/images/dummy_dummy.img
+ generic-VAGRANTSLASH-ubuntu2204_vagrant_box_image_4.3.12_box.img   /var/lib/libvirt/images/generic-VAGRANTSLASH-ubuntu2204_vagrant_box_image_4.3.12_box.img
+ master_master-vdb.qcow2                                            /var/lib/libvirt/images/master_master-vdb.qcow2
+ worker-3_default.img                                               /var/lib/libvirt/images/worker-3_default.img
+
+alam@ALAM-NUC:~/projects/nuc/virsh/vms/master$ sudo rm -rfv /var/lib/libvirt/images/master_master-vdb.qcow2
+removed '/var/lib/libvirt/images/master_master-vdb.qcow2'
+alam@ALAM-NUC:~/projects/nuc/virsh/vms/master$
+
+
+sudo virsh vol-delete master_master-vdb.qcow2 --pool default
+

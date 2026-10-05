@@ -69,6 +69,8 @@ network:
       routes:
         - to: 192.168.10.0/24
           via: 192.168.100.1
+        - to: 192.168.1.0/24
+          via: 192.168.100.1
 EOF
       sudo netplan apply
     SHELL
