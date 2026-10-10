@@ -4,7 +4,7 @@
   vars:
     PROJECT_PATH: k8s_aws_lite  # File will be  created at home directory
     KUBERNETES_MAJOR_VERSION: v1.37
-    KUBERNETES_VERSION: 1.37.0  # add 'v' in at prefix whenever required.
+    KUBERNETES_VERSION: 1.37.1  # add 'v' in at prefix whenever required.
     PACKAGE_DIRECTORY: packages
     USER: vagrant
     MASTER_NODE_IP: 192.168.100.10
