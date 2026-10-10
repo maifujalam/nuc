@@ -1,10 +1,10 @@
-vagrant global-status --prune
-virsh destroy master_master
-virsh undefine master_master --remove-all-storage --nvram
-sudo virsh vol-delete master_master-vdb.qcow2 --pool default
-
-
-
+A. vagrant global-status --prune
+B. virsh destroy master_master
+C. virsh undefine master_master --remove-all-storage --nvram
+D. sudo virsh vol-delete master_master-vdb.qcow2 --pool default
+E. sudo virsh pool-list
+F. sudo virsh vol-list default
+G. sudo virsh vol-delete  worker-2_worker-2-vdb.qcow2 --pool default
 
 alam@ALAM-NUC:~/projects/nuc/virsh/vms/master$ sudo virsh pool-list
  Name      State    Autostart
