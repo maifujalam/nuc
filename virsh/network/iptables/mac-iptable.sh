@@ -3,7 +3,7 @@
 DEST="192.168.100.0/24"
 
 WIFI_IF="en0"
-WIFI_GW="192.168.1.69"
+WIFI_GW="192.168.1.57"  # 69 when on WiFi 1002-B
 
 TB_IF="bridge0"
 TB_GW="192.168.10.2"

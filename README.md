@@ -33,8 +33,9 @@ Preconfigure:
 2. Run ansible playbook for worker-{1,2,3} setup: k8s_aws_lite/ansible/worker-{1,2,3}/worker{1,2,3}.yaml
 3. Run Defaault app(CNI,ArgoCD) setup playbook: k8s_aws_lite/ansible/apps/apps.yaml
 4. Open Nodeport service of ArgoCD and install Apps in below order:
+   - metrics-server
    - Istio
    - Istio-ingress
    - Cert-manager
-   - metrics-server
+
   
