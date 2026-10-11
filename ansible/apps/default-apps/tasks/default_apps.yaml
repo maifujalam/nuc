@@ -271,6 +271,13 @@
     replace: "https://{{ MASTER_NODE_IP }}:6443"
   tags: [kubeconfig]
 
+- name: Replace cluster name local-k8s → k8s-nuc
+  ansible.builtin.replace:
+    path: "{{ KUBECONFIG_PATH }}"
+    regexp: 'local-k8s'
+    replace: 'nuc-k8s'
+
+
 - name: Add nuc Kubernetes cluster to ArgoCD
   ansible.builtin.shell: |
     argocd cluster add kubernetes-admin@nuc-k8s \ 
