@@ -13,7 +13,7 @@ spec:
               repoURL: https://github.com/maifujalam/nuc.git
               revision: main
               files:
-                - path: k8s/v1.37.0/clusters/*/metrics-server/appset-config.yaml
+                - path: k8s/v1.37.1/clusters/*/metrics-server/appset-config.yaml
           - clusters:
               selector:
                 matchLabels:
