@@ -80,6 +80,9 @@ client-config-dir /etc/openvpn/ccd
    a. ifconfig tun0
    b. sudo netstat -nlp | grep -i vpn
 
+16. Also add the route to the  nuc as below:
+ sudo iptables -I FORWARD 1   -i tun0 -o vm-local   -d 192.168.100.0/24 -j ACCEPT
+ sudo iptables -I FORWARD 1   -i vm-local -o tun0   -s 192.168.100.0/24 -j ACCEPT
 ============== Client Configuration ==============
 15. Create a client configuration file:
    a. cd ~/openvpn-ca
