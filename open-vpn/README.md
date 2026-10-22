@@ -34,15 +34,16 @@ group nogroup
 topology subnet
 
 server 10.8.0.0 255.255.255.0
+route 192.168.100.0 255.255.255.0
 
 push "route 10.8.0.0 255.255.255.0"
 
-ca /etc/openvpn/ca.crt
-cert /etc/openvpn/server.crt
-key /etc/openvpn/server.key
-dh /etc/openvpn/dh.pem
+ca /etc/openvpn/server/ca.crt
+cert /etc/openvpn/server/server.crt
+key /etc/openvpn/server/server.key
+dh /etc/openvpn/server/dh.pem
 
-tls-crypt /etc/openvpn/ta.key
+tls-crypt /etc/openvpn/server/ta.key
 
 keepalive 10 120
 
@@ -58,20 +59,24 @@ log-append /var/log/openvpn/server.log
 verb 3
 
 explicit-exit-notify 1
+client-config-dir /etc/openvpn/ccd
 
-11. Enable IP forwarding: sudo vi /etc/sysctl.conf
+11. Create nuc client configuration:
+     a. Add below details: vi /etc/openvpn/ccd/nuc-client 
+    iroute 192.168.100.0 255.255.255.0
+12. Enable IP forwarding: sudo vi /etc/sysctl.conf
    a. Uncomment the line: net.ipv4.ip_forward=1
    b. Apply the changes: sudo sysctl -p
    c. Verify: cat /proc/sys/net/ipv4/ip_forward
-12. Copy the openvpn server configuration file to the systemd directory:
+13. Copy the openvpn server configuration file to the systemd directory:
  sudo cp /etc/openvpn/server.conf /etc/openvpn/server.conf
  sudo chmod 600 /etc/openvpn/server.conf
-13. Restart the OpenVPN service and enable it to start on boot:
+14. Restart the OpenVPN service and enable it to start on boot:
     sudo systemctl daemon-reload
    a. sudo systemctl start openvpn-server@server
    b. sudo systemctl enable openvpn-server@server
    c. Check the status: sudo systemctl status openvpn-server@server
-14. Verify:
+15. Verify:
    a. ifconfig tun0
    b. sudo netstat -nlp | grep -i vpn
 

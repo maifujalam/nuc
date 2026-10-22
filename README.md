@@ -39,3 +39,5 @@ Preconfigure:
    - Cert-manager
 
   
+Get the route details:
+ip route get 10.8.0.1
