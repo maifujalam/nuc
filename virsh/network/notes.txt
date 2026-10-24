@@ -120,3 +120,5 @@ iptables -I FORWARD 6 -i vm-local -o tun0 -m conntrack --ctstate ESTABLISHED,REL
 
 
 ssh-keygen -f '/home/alam/.ssh/known_hosts' -R 'master'
+
+sudo iptables -nvL -t nat --line-number
