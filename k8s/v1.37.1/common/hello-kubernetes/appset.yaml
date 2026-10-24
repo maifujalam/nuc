@@ -10,7 +10,7 @@ spec:
    - matrix:
         generators:
           - git:
-              repoURL: https://github.com/maifujalam/k8s_aws_lite.git
+              repoURL: https://github.com/maifujalam/nuc.git
               revision: main
               files:
                 - path: k8s/v1.37.1/clusters/*/hello-kubernetes/appset-config.yaml
@@ -37,7 +37,7 @@ spec:
         - repoURL: https://github.com/maifujalam/k8s_aws_lite.git
           targetRevision: main
           ref: values
-        - repoURL: https://github.com/maifujalam/k8s_aws_lite.git
+        - repoURL: https://github.com/maifujalam/nuc.git
           targetRevision: main
           path: 'k8s/v1.37.1/clusters/dev/{{ index .path.segments 4}}/kubernetes-objects'
           directory:
