@@ -1,0 +1,33 @@
+1. Create CSR and key:
+
+sudo /usr/local/bin/easyrsa \
+  --pki-dir=/home/ubuntu/openvpn-ca/pki \
+  --batch gen-req iphone16 nopass
+
+2. Sign the csr:
+sudo /usr/local/bin/easyrsa \
+  --pki-dir=/home/ubuntu/openvpn-ca/pki \
+  --batch sign-req client iphone16
+
+  [ for passphrase enter passcode created while creating ca]
+
+  3. Verify the certificate:
+  sudo ls -l \
+  /home/ubuntu/openvpn-ca/pki/issued/iphone16.crt \
+  /home/ubuntu/openvpn-ca/pki/private/iphone16.key
+
+  4. Assign static vpn ip for iphone:
+
+sudo tee /etc/openvpn/ccd/iphone16 >/dev/null <<'EOF'
+ifconfig-push 10.8.0.3 255.255.255.0
+EOF
+
+sudo chmod 644 /etc/openvpn/ccd/iphone16
+sudo cat /etc/openvpn/ccd/iphone16
+
+5. Create vpn client configuration file:
+sh iphone16-vpn-client.sh
+
+6. Transfer the ovpn file to the iphone using airdrop or email. Then import the ovpn file to the openvpn app on the iphone.
+
+7. Verify the connection from bastion: ping 10.0.0.3

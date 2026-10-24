@@ -4,7 +4,7 @@
 3. Seatup PKI: easyrsa init-pki
 4. Setup CA:
    a. easyrsa build-ca
-   b. enter pass
+   b. enter pass:786666
    c. enter common name: server
 5. Create VPN server certificate and key:
    a. easyrsa build-server-full server nopass
