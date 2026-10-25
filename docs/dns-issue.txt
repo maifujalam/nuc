@@ -1,3 +1,4 @@
 Resolve DNS issue on NUC VM:
 sudo resolvectl dnssec eth0 no
 sudo netplan apply
+ping google.com
