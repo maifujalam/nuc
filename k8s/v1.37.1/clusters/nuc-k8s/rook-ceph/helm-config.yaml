@@ -360,7 +360,7 @@ cephClusterSpec:
         memory: "100Mi"
       requests:
         cpu: "50m"
-        memory: "128Mi"
+        memory: "50Mi"
     crashcollector:
       limits:
         memory: "60Mi"
