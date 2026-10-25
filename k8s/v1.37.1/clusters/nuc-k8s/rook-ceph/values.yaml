@@ -316,12 +316,14 @@ cephClusterSpec:
   resources:
     mgr:
       limits:
+        cpu: "1000m"
         memory: "1Gi"
       requests:
         cpu: "500m"
         memory: "512Mi"
     mon:
       limits:
+        cpu: "1000m"
         memory: "2Gi"
       requests:
         cpu: "1000m"
@@ -343,13 +345,13 @@ cephClusterSpec:
       #         cf. https://github.com/rook/rook/pull/11103
       requests:
         cpu: "500m"
-        memory: "50Mi"
+        memory: "100Mi"
     mgr-sidecar:
       limits:
         memory: "100Mi"
       requests:
         cpu: "100m"
-        memory: "40Mi"
+        memory: "100Mi"
     crashcollector:
       limits:
         memory: "60Mi"
