@@ -23,7 +23,7 @@ crds:
 # -- Pod resource requests & limits
 resources:
   limits:
-    memory: 256Mi
+    memory: 512Mi
   requests:
     cpu: 10m
     memory: 64Mi
@@ -237,5 +237,5 @@ obcAllowAdditionalConfigFields: "maxObjects,maxSize"
 monitoring:
   # -- Enable monitoring. Requires Prometheus to be pre-installed.
   # Enabling will also create RBAC rules to allow Operator to create ServiceMonitors
-  enabled: false
+  enabled: true
 

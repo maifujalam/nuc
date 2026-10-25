@@ -37,8 +37,8 @@ Preconfigure:
    - Cert-manager [ Skip the service monitor,later we will do it]
    - Istio
    - Istio-ingress
+   - ArgoCD (Srvice file)
    - 
-
   
 Get the route details:
 ip route get 10.8.0.1
