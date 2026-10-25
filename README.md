@@ -36,7 +36,8 @@ Preconfigure:
    - metrics-server
    - Istio
    - Istio-ingress
-   - Cert-manager
+   - Cert-manager [ Skip the service monitor,later we will do it]
+   - 
 
   
 Get the route details:
