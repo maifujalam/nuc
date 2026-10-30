@@ -661,9 +661,11 @@ cephObjectStores:
           size: 3
       dataPool:
         failureDomain: host
-        erasureCoded:
-          dataChunks: 2
-          codingChunks: 1
+#        erasureCoded:
+#          dataChunks: 2
+#          codingChunks: 1
+        replicated:
+          size: 3
         parameters:
           bulk: "true"
       preservePoolsOnDelete: true
