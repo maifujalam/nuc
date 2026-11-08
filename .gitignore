@@ -217,3 +217,23 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 **.terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+**/secrets.tfvars
+.idea
+venv
+*.terraform
+*/rootkey.csv
+**/rootkey.csv
+**/abc
+**/settings.yaml
+*/service-accounts
+**/*.lock.hcl
+**config
+venv
+.venv
+*.venv
+/jenkins-agent-raw/
+*helm_values_diff.py
+/helm-values-diff/values.diff.yaml
