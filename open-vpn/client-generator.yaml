@@ -182,26 +182,6 @@
         mode: "0600"
         force: true
 
-    - name: Read CA certificate
-      ansible.builtin.slurp:
-        src: "{{ ca_cert }}"
-      register: ca_cert_content
-
-    - name: Read TLS crypt key
-      ansible.builtin.slurp:
-        src: "{{ tls_key }}"
-      register: tls_key_content
-
-    - name: Read client certificate
-      ansible.builtin.slurp:
-        src: "{{ pki_dir }}/issued/{{ client_name }}.crt"
-      register: client_cert_content
-
-    - name: Read client key
-      ansible.builtin.slurp:
-        src: "{{ pki_dir }}/private/{{ client_name }}.key"
-      register: client_key_content
-
     - name: Report generated client details
       ansible.builtin.debug:
         msg:
