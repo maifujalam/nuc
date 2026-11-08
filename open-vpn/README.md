@@ -4,7 +4,7 @@
 3. Seatup PKI: easyrsa init-pki
 4. Setup CA:
    a. easyrsa build-ca
-   b. enter pass:786666
+   b. enter pass:786666-0000
    c. enter common name: server
 5. Create VPN server certificate and key:
    a. easyrsa build-server-full server nopass
@@ -18,11 +18,9 @@
 7. Generate Diffie-Hellman parameters: easyrsa gen-dh  [ may take 1+ mins] and ta key: openvpn --genkey secret ta.key
 8. Generate HMAC signature to strengthen the server's TLS integrity verification capabilities: sudo openvpn --genkey secret /etc/openvpn/ta.key
 9. Copy the server certificate, key, and Diffie-Hellman parameters to the OpenVPN directory:
-   a. sudo mkdir -p /etc/openvpn/server
-   b. sudo cp pki/ca.crt pki/private/server.key pki/issued/server.crt /etc/openvpn
-   c. sudo cp pki/dh.pem /etc/openvpn
-   d. sudo cp ta.key /etc/openvpn
-10. Create a server configuration file with below conditions: sudo vi /etc/openvpn/server.conf
+   a. sudo mkdir -p /etc/openvpn/server/
+   b. sudo mv pki/dh.pem pki/ca.crt pki/private/server/server.key pki/issued/server/server.crt /etc/openvpn/server/
+10. Create a server configuration file with below conditions: sudo vi /etc/openvpn/server/server.conf
 
 port 1194
 proto udp
@@ -62,15 +60,15 @@ explicit-exit-notify 1
 client-config-dir /etc/openvpn/ccd
 
 11. Create nuc client configuration:
-     a. Add below details: vi /etc/openvpn/ccd/nuc-client 
+     a. Add below details: sudo mkdir -p /etc/openvpn/ccd
+     b. Create the client configuration file: sudo vi /etc/openvpn/ccd/nuc-client 
     iroute 192.168.100.0 255.255.255.0
 12. Enable IP forwarding: sudo vi /etc/sysctl.conf
    a. Uncomment the line: net.ipv4.ip_forward=1
    b. Apply the changes: sudo sysctl -p
    c. Verify: cat /proc/sys/net/ipv4/ip_forward
 13. Copy the openvpn server configuration file to the systemd directory:
- sudo cp /etc/openvpn/server.conf /etc/openvpn/server.conf
- sudo chmod 600 /etc/openvpn/server.conf
+   sudo chmod 600 /etc/openvpn/server/server.conf
 14. Restart the OpenVPN service and enable it to start on boot:
     sudo systemctl daemon-reload
    a. sudo systemctl start openvpn-server@server
