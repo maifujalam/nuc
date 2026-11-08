@@ -1,0 +1,24 @@
+client
+dev tun
+proto udp
+remote {{ vpn_endpoint }} {{ vpn_port }}
+
+nobind
+persist-key
+persist-tun
+
+remote-cert-tls server
+auth-nocache
+verb 3
+
+dhcp-option DNS {{ vpn_server_ip }}
+
+{% if tunnel_mode == 'full' %}
+redirect-gateway def1
+{% else %}
+route 192.168.100.0 255.255.255.0
+{% endif %}
+
+<ca>
+{{ lookup('file', ca_cert) }}
+</ca>

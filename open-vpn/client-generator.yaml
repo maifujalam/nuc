@@ -168,90 +168,13 @@
         group: root
         mode: "0644"
 
-    - name: Create OpenVPN client profile
-      ansible.builtin.shell: |
-        set -eu
-        umask 077
-
-        OUT="{{ client_dir }}/{{ client_name }}.ovpn"
-
-        {
-          cat <<PROFILE
-client
-dev tun
-proto udp
-
-remote {{ vpn_endpoint }} {{ vpn_port }}
-
-nobind
-persist-key
-persist-tun
-
-remote-cert-tls server
-auth-nocache
-verb 3
-
-# Use Pi-hole/OpenVPN DNS
-dhcp-option DNS {{ vpn_server_ip }}
-
-PROFILE
-
-          if [ "{{ tunnel_mode }}" = "full" ]; then
-            cat <<'PROFILE'
-
-# Full tunnel
-redirect-gateway def1
-
-PROFILE
-          else
-            cat <<'PROFILE'
-
-# Split tunnel
-route 192.168.100.0 255.255.255.0
-
-PROFILE
-          fi
-
-          cat <<'PROFILE'
-<ca>
-PROFILE
-
-          cat "{{ ca_cert }}"
-
-          cat <<'PROFILE'
-</ca>
-<cert>
-PROFILE
-
-          cat "{{ pki_dir }}/issued/{{ client_name }}.crt"
-
-          cat <<'PROFILE'
-</cert>
-<key>
-PROFILE
-
-          cat "{{ pki_dir }}/private/{{ client_name }}.key"
-
-          cat <<'PROFILE'
-</key>
-<tls-crypt>
-PROFILE
-
-          cat "{{ tls_key }}"
-
-          cat <<'PROFILE'
-</tls-crypt>
-PROFILE
-
-        } > "$OUT"
-
-        chown ubuntu:ubuntu "$OUT"
-        chmod 0600 "$OUT"
-
-        echo "Created client profile: $OUT"
-      args:
-        executable: /bin/bash
-      no_log: true
+    - name: Generate client profile
+      ansible.builtin.template:
+        src: client.ovpn.j2
+        dest: "{{ client_dir }}/{{ client_name }}.ovpn"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0600"
 
     - name: Report generated client details
       ansible.builtin.debug:
