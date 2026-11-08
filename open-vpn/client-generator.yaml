@@ -175,6 +175,7 @@
         owner: ubuntu
         group: ubuntu
         mode: "0600"
+        force: true
 
     - name: Report generated client details
       ansible.builtin.debug:
