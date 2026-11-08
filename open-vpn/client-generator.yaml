@@ -1,4 +1,3 @@
-
 ---
 - name: Create an OpenVPN client
   hosts: bastion
@@ -13,17 +12,22 @@
   vars:
     easyrsa_bin: /usr/local/bin/easyrsa
     pki_dir: /home/ubuntu/openvpn-ca/pki
+
     ca_cert: /etc/openvpn/server/ca.crt
     tls_key: /etc/openvpn/server/ta.key
     ccd_dir: /etc/openvpn/ccd
+
     client_dir: /home/ubuntu
+
     vpn_subnet: 10.8.0.0/24
     vpn_server_ip: 10.8.0.1
     vpn_netmask: 255.255.255.0
+
     vpn_endpoint: 13.207.12.184
     vpn_port: 1194
 
   tasks:
+
     - name: Validate client name
       ansible.builtin.assert:
         that:
@@ -35,7 +39,14 @@
       ansible.builtin.assert:
         that:
           - client_ip is defined
-        fail_msg: "Supply client_ip, for example 10.8.0.3."
+        fail_msg: "Supply client_ip, for example 10.8.0.10."
+
+    - name: Validate tunnel mode
+      ansible.builtin.assert:
+        that:
+          - tunnel_mode is defined
+          - tunnel_mode in ['full', 'split']
+        fail_msg: "tunnel_mode must be either 'full' or 'split'."
 
     - name: Validate client IP belongs to the VPN subnet
       ansible.builtin.command:
@@ -46,11 +57,13 @@
             import ipaddress, sys
             ip = ipaddress.ip_address(sys.argv[1])
             net = ipaddress.ip_network("10.8.0.0/24")
+
             reserved = {
                 ipaddress.ip_address("10.8.0.1"),
                 net.network_address,
                 net.broadcast_address,
             }
+
             if ip not in net or ip in reserved:
                 sys.exit("IP must be an available host in 10.8.0.0/24")
           - "{{ client_ip }}"
@@ -59,8 +72,10 @@
     - name: Verify CA certificate matches the server CA
       ansible.builtin.shell: |
         set -eu
+
         server_fp="$(openssl x509 -in /etc/openvpn/server/ca.crt -noout -fingerprint -sha256)"
-        pki_fp="$(openssl x509 -in /home/ubuntu/openvpn-ca/pki/ca.crt -noout -fingerprint -sha256)"
+        pki_fp="$(openssl x509 -in {{ pki_dir }}/ca.crt -noout -fingerprint -sha256)"
+
         test "$server_fp" = "$pki_fp"
       args:
         executable: /bin/bash
@@ -80,21 +95,21 @@
     - name: Refuse to overwrite an existing client
       ansible.builtin.assert:
         that:
-          - >-
+          - >
             client_file_checks.results
             | selectattr('stat.exists')
             | list
             | length == 0
-        fail_msg: >-
-          Client files already exist. Choose a new client_name or inspect
-          the existing client before proceeding.
+        fail_msg: >
+          Client files already exist. Choose a new client_name
+          or inspect the existing client before proceeding.
 
     - name: Check that the IP is not assigned to another client
       ansible.builtin.shell: |
         set -eu
 
         if grep -R -E '^[[:space:]]*ifconfig-push[[:space:]]+{{ client_ip | regex_escape }}([[:space:]]|$)' \
-          /etc/openvpn/ccd/ 2>/dev/null; then
+        /etc/openvpn/ccd/ 2>/dev/null; then
           echo "IP already exists in a CCD file"
           exit 1
         fi
@@ -107,12 +122,6 @@
         executable: /bin/bash
       changed_when: false
 
-#    - name: Install pexpect for secure interactive signing
-#      ansible.builtin.apt:
-#        name: python3-pexpect
-#        state: present
-#        update_cache: true
-
     - name: Generate client private key and CSR
       ansible.builtin.command:
         argv:
@@ -122,12 +131,11 @@
           - gen-req
           - "{{ client_name }}"
           - nopass
-      register: csr_result
       no_log: true
 
     - name: Sign the client certificate using the existing CA
       ansible.builtin.expect:
-        command: >-
+        command: >
           {{ easyrsa_bin }}
           --pki-dir={{ pki_dir }}
           --batch sign-req client {{ client_name }}
@@ -151,7 +159,7 @@
           - issued_files.results | selectattr('stat.exists') | list | length == 2
         fail_msg: "Certificate or private key is missing."
 
-    - name: Configure the static VPN IP
+    - name: Configure static VPN IP
       ansible.builtin.copy:
         dest: "{{ ccd_dir }}/{{ client_name }}"
         content: |
@@ -160,7 +168,7 @@
         group: root
         mode: "0644"
 
-    - name: Create the full-tunnel client profile
+    - name: Create OpenVPN client profile
       ansible.builtin.shell: |
         set -eu
         umask 077
@@ -168,47 +176,78 @@
         OUT="{{ client_dir }}/{{ client_name }}.ovpn"
 
         {
+          cat <<PROFILE
+client
+dev tun
+proto udp
+
+remote {{ vpn_endpoint }} {{ vpn_port }}
+
+nobind
+persist-key
+persist-tun
+
+remote-cert-tls server
+auth-nocache
+verb 3
+
+# Use Pi-hole/OpenVPN DNS
+dhcp-option DNS {{ vpn_server_ip }}
+
+PROFILE
+
+          if [ "{{ tunnel_mode }}" = "full" ]; then
+            cat <<'PROFILE'
+
+# Full tunnel
+redirect-gateway def1
+
+PROFILE
+          else
+            cat <<'PROFILE'
+
+# Split tunnel
+route 192.168.100.0 255.255.255.0
+
+PROFILE
+          fi
+
           cat <<'PROFILE'
-        client
-        dev tun
-        proto udp
-        remote {{ vpn_endpoint }} {{ vpn_port }}
-        nobind
-        persist-key
-        persist-tun
-        remote-cert-tls server
-        auth-nocache
-        verb 3
+<ca>
+PROFILE
 
-        redirect-gateway def1
-        dhcp-option DNS 1.1.1.1
-        route 192.168.100.0 255.255.255.0
-
-        <ca>
-        PROFILE
           cat "{{ ca_cert }}"
+
           cat <<'PROFILE'
-        </ca>
-        <cert>
-        PROFILE
+</ca>
+<cert>
+PROFILE
+
           cat "{{ pki_dir }}/issued/{{ client_name }}.crt"
+
           cat <<'PROFILE'
-        </cert>
-        <key>
-        PROFILE
+</cert>
+<key>
+PROFILE
+
           cat "{{ pki_dir }}/private/{{ client_name }}.key"
+
           cat <<'PROFILE'
-        </key>
-        <tls-crypt>
-        PROFILE
+</key>
+<tls-crypt>
+PROFILE
+
           cat "{{ tls_key }}"
+
           cat <<'PROFILE'
-        </tls-crypt>
-        PROFILE
+</tls-crypt>
+PROFILE
+
         } > "$OUT"
 
         chown ubuntu:ubuntu "$OUT"
         chmod 0600 "$OUT"
+
         echo "Created client profile: $OUT"
       args:
         executable: /bin/bash
@@ -219,6 +258,7 @@
         msg:
           - "Client: {{ client_name }}"
           - "VPN IP: {{ client_ip }}"
-          - "CCD: {{ ccd_dir }}/{{ client_name }}"
+          - "Tunnel Mode: {{ tunnel_mode }}"
+          - "VPN Endpoint: {{ vpn_endpoint }}"
+          - "CCD File: {{ ccd_dir }}/{{ client_name }}"
           - "Profile: {{ client_dir }}/{{ client_name }}.ovpn"
-          - "The existing NUC configuration was not modified."
