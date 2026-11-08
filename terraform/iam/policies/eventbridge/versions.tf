@@ -1,0 +1,14 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "= 6.58.0"
+    }
+  }
+  required_version = ">= 1.6.1"
+  backend "s3" {
+    bucket = "terraform-s3-maifuj2"
+    key    = "terraform-state/k8s_aws/terraform/iam/policies/eventbridge"   # Hare our state files get stored for this object.
+    region = "ap-south-1"
+  }
+}
