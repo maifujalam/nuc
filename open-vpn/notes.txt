@@ -4,8 +4,7 @@
 10.8.0.4 mac  sudo ansible-playbook client-generator.yaml  -e "client_name=mac client_ip=10.8.0.4" -e "tunnel_mode=full"
 10.8.0.5 iphone-15  sudo ansible-playbook client-generator.yaml  -e "client_name=iphone-15 client_ip=10.8.0.5" -e "tunnel_mode=full"
 
- sudo ansible-playbook client-generator.yaml  -e "client_name=mac client_ip=10.8.0.2" -e "tunnel_mode=split"
- ansible-playbook client-generator.yaml -e client_name=macbook -e client_ip=10.8.0.10 -e tunnel_mode=split
+ sudo ansible-playbook client-generator.yaml  -e "client_name=nuc client_ip=10.8.0.2" -e "tunnel_mode=split"
 
  sudo ansible-playbook remove-client.yaml -e client_name=mac
 

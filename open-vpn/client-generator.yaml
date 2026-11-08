@@ -23,7 +23,7 @@
     vpn_server_ip: 10.8.0.1
     vpn_netmask: 255.255.255.0
 
-    vpn_endpoint: 13.207.12.184
+    vpn_endpoint: 13.233.54.234
     vpn_port: 1194
 
   tasks:
