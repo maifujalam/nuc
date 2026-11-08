@@ -238,3 +238,4 @@ venv
 *helm_values_diff.py
 /helm-values-diff/values.diff.yaml
 **.terraform.tfstate
+g
