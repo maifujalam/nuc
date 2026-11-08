@@ -142,8 +142,11 @@
         responses:
           'Enter pass phrase for .*ca\.key:': "{{ ca_passphrase }}"
         timeout: 120
-        echo: false
-      no_log: true
+        echo: true
+      register: sign_result
+
+    - debug:
+        var: sign_result
 
     - name: Verify that the certificate and key were created
       ansible.builtin.stat:
