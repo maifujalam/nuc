@@ -1,0 +1,107 @@
+---
+- name: Remove an OpenVPN client
+  hosts: bastion
+  become: true
+  gather_facts: false
+
+  vars:
+    pki_dir: /home/ubuntu/openvpn-ca/pki
+    ccd_dir: /etc/openvpn/ccd
+    client_dir: /home/ubuntu
+
+  tasks:
+    - name: Validate client name
+      ansible.builtin.assert:
+        that:
+          - client_name is defined
+          - client_name is match('^[A-Za-z0-9_-]+$')
+        fail_msg: "Provide client_name."
+
+    - name: Check existing client files
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - "{{ pki_dir }}/issued/{{ client_name }}.crt"
+        - "{{ pki_dir }}/private/{{ client_name }}.key"
+        - "{{ pki_dir }}/reqs/{{ client_name }}.req"
+        - "{{ ccd_dir }}/{{ client_name }}"
+        - "{{ client_dir }}/{{ client_name }}.ovpn"
+      register: client_files
+
+    - name: Show files that will be removed
+      ansible.builtin.debug:
+        msg: "{{ item.stat.path }}"
+      loop: "{{ client_files.results }}"
+      when: item.stat.exists
+
+    - name: Backup EasyRSA index.txt
+      ansible.builtin.copy:
+        src: "{{ pki_dir }}/index.txt"
+        dest: "{{ pki_dir }}/index.txt.bak.{{ ansible_date_time.epoch }}"
+        remote_src: true
+        mode: preserve
+
+    - name: Remove client certificate
+      ansible.builtin.file:
+        path: "{{ pki_dir }}/issued/{{ client_name }}.crt"
+        state: absent
+
+    - name: Remove client private key
+      ansible.builtin.file:
+        path: "{{ pki_dir }}/private/{{ client_name }}.key"
+        state: absent
+
+    - name: Remove client CSR
+      ansible.builtin.file:
+        path: "{{ pki_dir }}/reqs/{{ client_name }}.req"
+        state: absent
+
+    - name: Remove CCD entry
+      ansible.builtin.file:
+        path: "{{ ccd_dir }}/{{ client_name }}"
+        state: absent
+
+    - name: Remove generated OVPN profile
+      ansible.builtin.file:
+        path: "{{ client_dir }}/{{ client_name }}.ovpn"
+        state: absent
+
+    - name: Remove client from EasyRSA database
+      ansible.builtin.lineinfile:
+        path: "{{ pki_dir }}/index.txt"
+        regexp: "/CN={{ client_name }}$"
+        state: absent
+        backup: true
+
+    - name: Check for active VPN session
+      ansible.builtin.shell: |
+        grep -i "{{ client_name }}" /var/log/openvpn/status.log || true
+      args:
+        executable: /bin/bash
+      register: vpn_status
+      changed_when: false
+
+    - name: Restart OpenVPN if client was connected
+      ansible.builtin.systemd:
+        name: openvpn-server@server
+        state: restarted
+      when: vpn_status.stdout | length > 0
+
+    - name: Verify client removal
+      ansible.builtin.shell: |
+        grep -i "{{ client_name }}" {{ pki_dir }}/index.txt || true
+      args:
+        executable: /bin/bash
+      register: verify_result
+      changed_when: false
+
+    - name: Report removal result
+      ansible.builtin.debug:
+        msg:
+          - "Client removed: {{ client_name }}"
+          - "Certificate removed"
+          - "Private key removed"
+          - "CSR removed"
+          - "CCD removed"
+          - "OVPN profile removed"
+          - "EasyRSA database entry removed"
