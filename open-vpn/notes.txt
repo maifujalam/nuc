@@ -1,10 +1,12 @@
 10.8.0.1 aws-bastion [ 13.207.12.184 ]
-10.8.0.2 nuc [192.168.100.1]
-10.8.0.3 iphone-16
-10.8.0.4 mac
-10.8.0.5 iphone-15
+10.8.0.2 nuc [192.168.100.1] :  sudo ansible-playbook client-generator.yaml  -e "client_name=nuc client_ip=10.8.0.2" -e "tunnel_mode=split"
+10.8.0.3 iphone-16:  sudo ansible-playbook client-generator.yaml  -e "client_name=iphone-16 client_ip=10.8.0.3" -e "tunnel_mode=full"
+10.8.0.4 mac  sudo ansible-playbook client-generator.yaml  -e "client_name=mac client_ip=10.8.0.4" -e "tunnel_mode=full"
+10.8.0.5 iphone-15  sudo ansible-playbook client-generator.yaml  -e "client_name=iphone-15 client_ip=10.8.0.5" -e "tunnel_mode=full"
 
- ansible-playbook client-generator.yaml  -e "client_name=mac client_ip=10.8.0.2" -e "tunnel_mode=split"
+ sudo ansible-playbook client-generator.yaml  -e "client_name=mac client_ip=10.8.0.2" -e "tunnel_mode=split"
  ansible-playbook client-generator.yaml -e client_name=macbook -e client_ip=10.8.0.10 -e tunnel_mode=split
 
- ansible-playbook remove-client.yaml -e client_name=mac
+ sudo ansible-playbook remove-client.yaml -e client_name=mac
+
+ scp ubuntu@$BASTION_PUBLIC_IP:/home/ubuntu/nuc-openvpn-client/nuc.ovpn /home/alam/

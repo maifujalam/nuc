@@ -162,6 +162,25 @@
         that:
           - issued_files.results | selectattr('stat.exists') | list | length == 2
         fail_msg: "Certificate or private key is missing."
+    - name: Read CA certificate
+      slurp:
+        src: "{{ ca_cert }}"
+      register: ca_cert_content
+
+    - name: Read client certificate
+      slurp:
+        src: "{{ pki_dir }}/issued/{{ client_name }}.crt"
+      register: client_cert_content
+
+    - name: Read client key
+      slurp:
+        src: "{{ pki_dir }}/private/{{ client_name }}.key"
+      register: client_key_content
+
+    - name: Read tls-crypt key
+      slurp:
+        src: "{{ tls_key }}"
+      register: tls_key_content
 
     - name: Configure static VPN IP
       ansible.builtin.copy:
