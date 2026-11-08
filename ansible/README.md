@@ -50,6 +50,10 @@ all:
       hosts:
         master:
 
+    bastion:
+      hosts:
+        bastion:
+
     k8s-worker-1:
       hosts:
         worker-1:

@@ -48,7 +48,6 @@
             net = ipaddress.ip_network("10.8.0.0/24")
             reserved = {
                 ipaddress.ip_address("10.8.0.1"),
-                ipaddress.ip_address("10.8.0.2"),
                 net.network_address,
                 net.broadcast_address,
             }

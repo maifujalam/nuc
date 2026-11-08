@@ -4,4 +4,4 @@
 10.8.0.4 mac
 10.8.0.5 iphone-15
 
-ansible-playbook vpn-clinent-generator.yaml -e "client_name=mac client_ip=10.8.0.4"
+ansible-playbook client-generator.yaml  -e "client_name=mac client_ip=10.8.0.2"
