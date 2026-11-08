@@ -63,10 +63,10 @@ client-config-dir /etc/openvpn/ccd
      a. Add below details: sudo mkdir -p /etc/openvpn/ccd
      b. Create the client configuration file: sudo vi /etc/openvpn/ccd/nuc-client 
     iroute 192.168.100.0 255.255.255.0
-12. Enable IP forwarding: sudo vi /etc/sysctl.conf
-   a. Uncomment the line: net.ipv4.ip_forward=1
-   b. Apply the changes: sudo sysctl -p
-   c. Verify: cat /proc/sys/net/ipv4/ip_forward
+    12. Enable IP forwarding: sudo vi /etc/sysctl.conf
+       a. Uncomment the line: net.ipv4.ip_forward=1
+       b. Apply the changes: sudo sysctl -p
+       c. Verify: cat /proc/sys/net/ipv4/ip_forward
 13. Copy the openvpn server configuration file to the systemd directory:
    sudo chmod 600 /etc/openvpn/server/server.conf
 14. Restart the OpenVPN service and enable it to start on boot:

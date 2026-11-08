@@ -3,9 +3,24 @@
 10.8.0.3 iphone-16:  sudo ansible-playbook client-generator.yaml  -e "client_name=iphone-16 client_ip=10.8.0.3" -e "tunnel_mode=full"
 10.8.0.4 mac  sudo ansible-playbook client-generator.yaml  -e "client_name=mac client_ip=10.8.0.4" -e "tunnel_mode=full"
 10.8.0.5 iphone-15  sudo ansible-playbook client-generator.yaml  -e "client_name=iphone-15 client_ip=10.8.0.5" -e "tunnel_mode=full"
+10.8.0.6 iphone-15  sudo ansible-playbook client-generator.yaml  -e "client_name=mac-rahees client_ip=10.8.0.6" -e "tunnel_mode=full"
+
 
  sudo ansible-playbook client-generator.yaml  -e "client_name=nuc client_ip=10.8.0.2" -e "tunnel_mode=split"
 
  sudo ansible-playbook remove-client.yaml -e client_name=nuc
 
  scp ubuntu@$BASTION_PUBLIC_IP:/home/ubuntu/nuc-openvpn-client/nuc.ovpn /home/alam/
+
+
+On Bastion DO:-
+a. IP forwarding
+echo 'net.ipv4.ip_forward=1' | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+
+b. DO NAT MASQUERADE for interfac,for any trafic coing from tunnel:
+sudo iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o enX0 -j MASQUERADE
+sudo iptables -t nat -L -n -v
+
+c. Copy/Sync Clients:
+scp ubuntu@$BASTION_PUBLIC_IP:/home/ubuntu/*.ovpn /Users/skmaifujalam/Documents/OpenvpnClients/
