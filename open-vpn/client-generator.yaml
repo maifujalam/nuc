@@ -123,6 +123,7 @@
       changed_when: false
 
     - name: Generate client private key and CSR
+      become: true
       ansible.builtin.command:
         argv:
           - "{{ easyrsa_bin }}"
