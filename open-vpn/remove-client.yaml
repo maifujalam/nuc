@@ -2,7 +2,7 @@
 - name: Remove an OpenVPN client
   hosts: bastion
   become: true
-  gather_facts: false
+  gather_facts: true
 
   vars:
     pki_dir: /home/ubuntu/openvpn-ca/pki

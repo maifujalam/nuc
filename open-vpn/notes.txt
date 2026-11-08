@@ -6,3 +6,5 @@
 
  ansible-playbook client-generator.yaml  -e "client_name=mac client_ip=10.8.0.2" -e "tunnel_mode=split"
  ansible-playbook client-generator.yaml -e client_name=macbook -e client_ip=10.8.0.10 -e tunnel_mode=split
+
+ ansible-playbook remove-client.yaml -e client_name=mac
