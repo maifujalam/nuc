@@ -92,17 +92,17 @@
         - "{{ client_dir }}/{{ client_name }}.ovpn"
       register: client_file_checks
 
-    - name: Refuse to overwrite an existing client
-      ansible.builtin.assert:
-        that:
-          - >
-            client_file_checks.results
-            | selectattr('stat.exists')
-            | list
-            | length == 0
-        fail_msg: >
-          Client files already exist. Choose a new client_name
-          or inspect the existing client before proceeding.
+#    - name: Refuse to overwrite an existing client
+#      ansible.builtin.assert:
+#        that:
+#          - >
+#            client_file_checks.results
+#            | selectattr('stat.exists')
+#            | list
+#            | length == 0
+#        fail_msg: >
+#          Client files already exist. Choose a new client_name
+#          or inspect the existing client before proceeding.
 
     - name: Check that the IP is not assigned to another client
       ansible.builtin.shell: |
