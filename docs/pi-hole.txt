@@ -10,5 +10,12 @@ sudo systemctl restart pihole-FTL
 http://13.233.54.234:8080/admin/
 
 sudo pihole -r
-
+sudo pihole status
 sudo pihole setpassword ""
+
+
+Change PiholePort:
+1.  sudo vi /etc/pihole/pihole.toml
+2. Update line to.
+      port = "8080o,[::]:8080o"
+3. sudo systemctl restart pihole-FTL
