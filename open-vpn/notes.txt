@@ -3,7 +3,8 @@
 10.8.0.3 iphone-16:  sudo ansible-playbook client-generator.yaml  -e "client_name=iphone-16 client_ip=10.8.0.3" -e "tunnel_mode=full"
 10.8.0.4 mac  sudo ansible-playbook client-generator.yaml  -e "client_name=mac client_ip=10.8.0.4" -e "tunnel_mode=full"
 10.8.0.5 iphone-15  sudo ansible-playbook client-generator.yaml  -e "client_name=iphone-15 client_ip=10.8.0.5" -e "tunnel_mode=full"
-10.8.0.6 iphone-15  sudo ansible-playbook client-generator.yaml  -e "client_name=mac-rahees client_ip=10.8.0.6" -e "tunnel_mode=full"
+10.8.0.6 mac-rahees  sudo ansible-playbook client-generator.yaml  -e "client_name=mac-rahees client_ip=10.8.0.6" -e "tunnel_mode=full"
+10.8.0.7 moto  sudo ansible-playbook client-generator.yaml  -e "client_name=moto client_ip=10.8.0.7" -e "tunnel_mode=full"
 
 
  sudo ansible-playbook client-generator.yaml  -e "client_name=nuc client_ip=10.8.0.2" -e "tunnel_mode=split"
