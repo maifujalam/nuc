@@ -5,7 +5,7 @@ CPU         = 2
 MEMORY      = 4096
 IP_MASTER   = "192.168.100.10"
 ADDITIONAL_DISK_COUNT_WORKER = 1
-ADDITIONAL_DISK_SIZE = "10G"
+ADDITIONAL_DISK_SIZE = "1G"
 
 Vagrant.configure("2") do |config|
   config.vagrant.plugins = ['vagrant-timezone']
