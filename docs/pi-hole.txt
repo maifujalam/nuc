@@ -18,4 +18,35 @@ Change PiholePort:
 1.  sudo vi /etc/pihole/pihole.toml
 2. Update line to.
       port = "8080o,[::]:8080o"
+      [webserver]
+      domain = "pihole.maifuj.com"
+      [dns]
+      upstreams = [
+        "8.8.8.8",
+        "8.8.4.4",
+        "172.31.0.2"
+      ]
 3. sudo systemctl restart pihole-FTL
+4. test the conenction: curl -I -H "Host: pihole.maifuj.com" http://127.0.0.1:8080/admin/
+
+
+Setup pihole as local private dns server for nuc and bastion: [WIP]
+1. Go to UI and update the following settings:
+  a. Settings -> Local DNS Records -> Add a new record:
+
+10.8.0.1         bastion.maifuj-pvt.com bastion
+10.8.0.2         nuc.maifuj-pvt.com nuc
+192.168.100.10   master.maifuj-pvt.com master
+192.168.100.11   worker-1.maifuj-pvt.com worker-1
+192.168.100.12   worker-2.maifuj-pvt.com worker-2
+192.168.100.13   worker-3.maifuj-pvt.com worker-3
+
+
+2. Verify the local dns server is working from nuc and bastion:
+❯ nslookup worker-2.maifuj-pvt.com
+Server:		10.8.0.1
+Address:	10.8.0.1#53
+
+Name:	worker-2.maifuj-pvt.com
+Address: 192.168.100.12
+
