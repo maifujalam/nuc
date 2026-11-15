@@ -13,7 +13,7 @@ clusterName:
 kubeVersion:
 
 # -- Cluster ceph.conf override
-configOverride:
+configOverride: |
 # configOverride: |
    [global]
    mon_allow_pool_delete = true
