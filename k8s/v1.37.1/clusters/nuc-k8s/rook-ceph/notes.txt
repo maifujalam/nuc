@@ -1,10 +1,36 @@
-1. Cretae a namespace:
+Docs: https://rook.io/docs/rook/v1.21/Helm-Charts/helm-charts/
+
+Install Ceph Operator:
+1. helm repo add rook-release https://charts.rook.io/release
+2. helm repo update
+3. helm show values  rook-release/rook-ceph --version v1.21.1 > values-operator.yaml
+4. helm upgrade -i --create-namespace --namespace rook-ceph rook-ceph rook-release/rook-ceph --version v1.21.1 -f values-operator.yaml
+
+Insall Ceph-CSI Driver:
+1. helm repo add ceph-csi-operator https://ceph.github.io/ceph-csi-operator
+2. helm repo update
+3. helm search repo ceph-csi-operator/ceph-csi-drivers
+4. helm show values ceph-csi-operator/ceph-csi-drivers --version v1.1.0 > values-ceph-csi-drivers.yaml
+5. helm upgrade -i ceph-csi-drivers --namespace rook-ceph ceph-csi-operator/ceph-csi-drivers --version v1.1.0 -f values-ceph-csi-drivers.yaml
+
+Install Ceph Cluster:
+1. helm repo add rook-release https://charts.rook.io/release [ Skip,as it already added]
+2. helm repo update
+3. helm show values  rook-release/rook-ceph-cluster --version v1.21.1 > values.yaml
+4. helm upgrade -i --namespace rook-ceph rook-ceph-cluster rook-release/rook-ceph-cluster --version v1.21.1 -f helm-config.yaml
+
+
+
+
+
+
+
+
+
+
+1. Get the default values for the Rook Ceph,which is ceph cluster operator :
    ```bash
-   kubectl create namespace rook-ceph
-   ```
-2. Get the default values for the Rook Ceph,which is ceph cluster operator :
-   ```bash
-   helm show values rook/rook-ceph --version  v1.20.5 > values-operator.yaml
+   helm show values rook/rook-ceph --version  v1.21.1 > values-operator.yaml
    ```
 2. Install the Rook Ceph operator:
    ```bash
@@ -13,6 +39,7 @@
 3. Create a Ceph cluster:
 a. Get the default values for the Ceph cluster:
    ```bash
-   helm show values rook/rook-ceph-cluster --version v1.20.5 > values.yaml
+   helm show values rook/rook-ceph-cluster --version v1.21.1 > values.yaml
    ```
    Installl with argocd.
+
