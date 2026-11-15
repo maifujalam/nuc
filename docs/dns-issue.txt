@@ -2,3 +2,14 @@ Resolve DNS issue on NUC VM:
 sudo resolvectl dnssec eth0 no
 sudo netplan apply
 ping google.com
+
+resolvectl status
+
+
+Permently disable DNSSEC on NUC VM:
+1.sudo mkdir -p /etc/systemd/resolved.conf.d
+2.sudo tee /etc/systemd/resolved.conf.d/dns.conf >/dev/null <<EOF
+[Resolve]
+DNSSEC=no
+EOF
+3. sudo systemctl restart systemd-resolved
