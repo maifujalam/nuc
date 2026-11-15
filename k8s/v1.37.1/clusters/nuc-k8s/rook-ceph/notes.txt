@@ -20,26 +20,8 @@ Install Ceph Cluster:
 4. helm upgrade -i --namespace rook-ceph rook-ceph-cluster rook-release/rook-ceph-cluster --version v1.21.1 -f helm-config.yaml
 
 
-
-
-
-
-
-
-
-
-1. Get the default values for the Rook Ceph,which is ceph cluster operator :
-   ```bash
-   helm show values rook/rook-ceph --version  v1.21.1 > values-operator.yaml
-   ```
-2. Install the Rook Ceph operator:
-   ```bash
-   helm upgrade -i --create-namespace --namespace rook-ceph rook-ceph rook/rook-ceph --version v1.20.5 -f values-operator.yaml
-   ```
-3. Create a Ceph cluster:
-a. Get the default values for the Ceph cluster:
-   ```bash
-   helm show values rook/rook-ceph-cluster --version v1.21.1 > values.yaml
-   ```
-   Installl with argocd.
-
+Wipe old disk:
+a. lsblk -fa
+b. sudo wipefs -a /dev/vdb
+c. sudo dd if=/dev/zero of=/dev/vdb bs=1M count=100 oflag=direct,dsync
+d. Restart the osd-pod: kubectl -n rook-ceph delete pod -l app=rook-ceph-osd
