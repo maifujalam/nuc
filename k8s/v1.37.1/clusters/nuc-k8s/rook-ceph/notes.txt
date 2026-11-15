@@ -31,3 +31,5 @@ d. sudo dd if=/dev/zero of=/dev/vdb bs=1M count=100 oflag=direct,dsync
 e. Restart the osd-pod: kubectl -n rook-ceph delete pod -l app=rook-ceph-osd-prepare
   kubectl -n rook-ceph rollout restart deploy rook-ceph-operator
 kubectl -n rook-ceph delete job --all
+f. Single line:
+sudo sgdisk --zap-all /dev/vdb &&  sudo wipefs -af /dev/vdb &&  sudo dd if=/dev/zero of=/dev/vdb bs=1M count=100 oflag=direct,dsync
