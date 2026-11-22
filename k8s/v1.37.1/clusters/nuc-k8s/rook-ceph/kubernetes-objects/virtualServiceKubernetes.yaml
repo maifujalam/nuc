@@ -11,5 +11,5 @@ spec:
         - destination:
             host: rook-ceph-mgr-dashboard
             port:
-              number: 8443
+              number: 7000
 
