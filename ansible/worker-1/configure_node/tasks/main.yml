@@ -1,10 +1,15 @@
 ---
 # tasks file for configure_crictl
 - name: Configure crictl
-  include_tasks: conigure_crictl.yaml
+  include_tasks: configure_crictl.yaml
 
 - name: Configure Network
   include_tasks: configure_network.yaml
 
 - name: Configure worker node
   include_tasks: configure_worker_node.yaml
+
+- name: Configure chrony
+  include_tasks: setup-chrony.yaml
+  tags:
+    - chrony
