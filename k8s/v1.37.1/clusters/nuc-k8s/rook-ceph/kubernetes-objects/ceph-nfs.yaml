@@ -1,0 +1,28 @@
+#apiVersion: ceph.rook.io/v1
+#kind: CephNFS
+#metadata:
+#  name: ceph-nfs
+#  namespace: rook-ceph
+#spec:
+#  server:
+#    active: 1
+#---
+#apiVersion: storage.k8s.io/v1
+#kind: StorageClass
+#metadata:
+#  name: ceph-nfs
+#provisioner: rook-ceph.nfs.csi.ceph.com
+#reclaimPolicy: Delete
+#volumeBindingMode: Immediate
+#parameters:
+#  nfsCluster: ceph-nfs
+#  server: rook-ceph-nfs-ceph-nfs-a
+#  clusterID: rook-ceph
+#  fsName: ceph-filesystem
+#  pool: ceph-filesystem-data0
+#  csi.storage.k8s.io/provisioner-secret-name: rook-csi-cephfs-provisioner
+#  csi.storage.k8s.io/provisioner-secret-namespace: rook-ceph
+#  csi.storage.k8s.io/controller-expand-secret-name: rook-csi-cephfs-provisioner
+#  csi.storage.k8s.io/controller-expand-secret-namespace: rook-ceph
+#  csi.storage.k8s.io/node-stage-secret-name: rook-csi-cephfs-node
+#  csi.storage.k8s.io/node-stage-secret-namespace: rook-ceph
