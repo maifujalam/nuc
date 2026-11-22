@@ -3,33 +3,43 @@ Docs: https://rook.io/docs/rook/v1.21/Helm-Charts/helm-charts/
 Install Ceph Operator:
 1. helm repo add rook-release https://charts.rook.io/release
 2. helm repo update
-3. helm show values  rook-release/rook-ceph --version v1.21.1 > values-operator.yaml
-4. helm upgrade -i --create-namespace --namespace rook-ceph rook-ceph rook-release/rook-ceph --version v1.21.1 -f values-operator.yaml
-5. Uninstall Ceph Operator: helm uninstall --namespace rook-ceph rook-ceph
+3. helm show values  rook-release/rook-ceph --version v1.21.2 > values-operator.yaml
+4.  Install Ceph Operator:
+helm upgrade -i --create-namespace --namespace rook-ceph rook-ceph rook-release/rook-ceph --version v1.21.2 -f values-operator.yaml
+5. Uninstall Ceph Operator:
+helm uninstall --namespace rook-ceph rook-ceph
 
 Insall Ceph-CSI Driver:
 1. helm repo add ceph-csi-operator https://ceph.github.io/ceph-csi-operator
 2. helm repo update
 3. helm search repo ceph-csi-operator/ceph-csi-drivers
 4. helm show values ceph-csi-operator/ceph-csi-drivers --version v1.1.0 > values-ceph-csi-drivers.yaml
-5. helm upgrade -i ceph-csi-drivers --namespace rook-ceph ceph-csi-operator/ceph-csi-drivers --version v1.1.0 -f values-ceph-csi-drivers.yaml
-6. Uninstall Ceph-CSI Driver: helm uninstall --namespace rook-ceph ceph-csi-drivers
+5.
+helm upgrade -i ceph-csi-drivers --namespace rook-ceph ceph-csi-operator/ceph-csi-drivers --version v1.1.0 -f values-ceph-csi-drivers.yaml
+6. Uninstall Ceph-CSI Driver:
+helm uninstall --namespace rook-ceph ceph-csi-drivers
 
-Install Ceph Cluster[ Use ArgoCD]:
+Install Ceph Cluster[ Do not Use ArgoCD,as the order of setup is handeld by helm]:
 1. helm repo add rook-release https://charts.rook.io/release [ Skip,as it already added]
 2. helm repo update
-3. helm show values  rook-release/rook-ceph-cluster --version v1.21.1 > values.yaml
-4. # helm upgrade -i --namespace rook-ceph rook-ceph-cluster rook-release/rook-ceph-cluster --version v1.21.1 -f helm-config.yaml
+
+3. helm show values  rook-release/rook-ceph-cluster --version v1.21.2 > values.yaml
+4.  Only install via helm,managed by Argocd.
+helm upgrade -i --namespace rook-ceph rook-ceph-cluster rook-release/rook-ceph-cluster --version v1.21.2 -f helm-config.yaml
+5. Uninstall:
+
+kubectl -n rook-ceph patch cephcluster rook-ceph --type merge \
+  -p '{"spec":{"cleanupPolicy":{"confirmation":"yes-really-destroy-data"}}}'
+kubectl -n rook-ceph delete cephcluster rook-ceph --force --grace-period=0
+helm uninstall --namespace rook-ceph rook-ceph-cluster
 
 
+k edit clientprofiles.csi.ceph.io -n rook-ceph rook-ceph
+k delete clientprofiles.csi.ceph.io -n rook-ceph rook-ceph --force --grace-period=0
 
+k delete ns rook-ceph --force --grace-period=0
+
+
+Get Ceph FSID: kubectl -n rook-ceph get secret rook-ceph-mon -o jsonpath='{.data.fsid}' | base64 -d; echo
 Wipe old disk:
-a. lsblk -fa
-b. sudo sgdisk --zap-all /dev/vdb
-c. sudo wipefs -a /dev/vdb
-d. sudo dd if=/dev/zero of=/dev/vdb bs=1M count=100 oflag=direct,dsync
-e. Restart the osd-pod: kubectl -n rook-ceph delete pod -l app=rook-ceph-osd-prepare
-  kubectl -n rook-ceph rollout restart deploy rook-ceph-operator
-kubectl -n rook-ceph delete job --all
-f. Single line:
-sudo sgdisk --zap-all /dev/vdb &&  sudo wipefs -af /dev/vdb &&  sudo dd if=/dev/zero of=/dev/vdb bs=1M count=100 oflag=direct,dsync
+a. Run nuc/virsh/vms/wipe_vdb.sh from nun once to wipe disk for all vm.

@@ -3,3 +3,7 @@ virsh list --all
 FOrce Destroy A VM:
 virsh destroy sample_default   # if it’s running
 virsh undefine sample_default  # remove definition
+
+
+Ditach sidk from vm: sudo virsh detach-disk master_master vdb --config
+
