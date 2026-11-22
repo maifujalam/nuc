@@ -48,3 +48,10 @@ Set Ceph Dashboard password:
 echo -n 'YourNewPassword' > /tmp/pw
 ceph dashboard ac-user-set-password admin -i /tmp/pw --force-password
 rm /tmp/pw
+
+Mute the Insecure key warning alert:
+ceph health mute AUTH_INSECURE_CLIENT_KEY_TYPE
+ceph health mute AUTH_INSECURE_KEYS_ALLOWED
+ceph health mute AUTH_INSECURE_KEYS_CREATABLE
+
+ceph config set global mon_max_pg_per_osd 300
