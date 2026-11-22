@@ -605,6 +605,8 @@ cephFileSystems:
             size: 3
           # Optional and highly recommended, 'data0' by default, see https://github.com/rook/rook/blob/master/Documentation/CRDs/Shared-Filesystem/ceph-filesystem-crd.md#pools
           name: data0
+          parameters:
+            target_size_ratio: "0.2"
       metadataServer:
         activeCount: 1
         activeStandby: true
@@ -642,6 +644,37 @@ cephFileSystems:
         # will set default as `ext4`. Note that `xfs` is not recommended due to potential deadlock
         # in hyperconverged settings where the volume is mounted on the same node as the osds.
         csi.storage.k8s.io/fstype: ext4
+
+# -- A list of CephNFS configurations to deploy
+cephNFSes:
+  - name: ceph-nfs
+    spec:
+      server:
+        active: 1
+    storageClass:
+      enabled: true
+      name: ceph-nfs
+      reclaimPolicy: Delete
+      allowVolumeExpansion: true
+      volumeBindingMode: "Immediate"
+      annotations: {}
+      labels: {}
+      mountOptions: []
+      parameters:
+        nfsCluster: ceph-nfs
+        server: rook-ceph-nfs-ceph-nfs-a
+        clusterID: "{{ .Release.Namespace }}"
+        fsName: ceph-filesystem
+        pool: ceph-filesystem-data0
+        # The secrets contain Ceph admin credentials.
+        csi.storage.k8s.io/provisioner-secret-name: rook-csi-cephfs-provisioner
+        csi.storage.k8s.io/provisioner-secret-namespace: "{{ .Release.Namespace }}"
+        csi.storage.k8s.io/controller-expand-secret-name: rook-csi-cephfs-provisioner
+        csi.storage.k8s.io/controller-expand-secret-namespace: "{{ .Release.Namespace }}"
+        csi.storage.k8s.io/controller-publish-secret-name: rook-csi-cephfs-provisioner
+        csi.storage.k8s.io/controller-publish-secret-namespace: "{{ .Release.Namespace }}"
+        csi.storage.k8s.io/node-stage-secret-name: rook-csi-cephfs-node
+        csi.storage.k8s.io/node-stage-secret-namespace: "{{ .Release.Namespace }}"
 
 # -- Settings for the filesystem snapshot class
 # @default -- See [CephFS Snapshots](../Storage-Configuration/Ceph-CSI/ceph-csi-snapshot.md#cephfs-snapshots)
@@ -685,7 +718,8 @@ cephObjectStores:
         replicated:
           size: 3
         parameters:
-          bulk: "true"
+          bulk: "false"
+          target_size_ratio: "0.1"
       preservePoolsOnDelete: true
       gateway:
         port: 80
