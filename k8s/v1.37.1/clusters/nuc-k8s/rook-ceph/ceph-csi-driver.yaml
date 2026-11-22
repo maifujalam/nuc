@@ -30,7 +30,7 @@ drivers:
     name: rook-ceph.cephfs.csi.ceph.com # csi-provisioner-name
     # snapshotPolicy: volumeSnapshot
   nfs:
-    enabled: false
+    enabled: true
     name: rook-ceph.nfs.csi.ceph.com # csi-provisioner-name
   nvmeof:
     enabled: false
