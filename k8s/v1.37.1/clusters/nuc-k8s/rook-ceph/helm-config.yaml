@@ -526,6 +526,8 @@ cephBlockPools:
       failureDomain: host
       replicated:
         size: 3
+      parameters:
+        target_size_ratio: "0.6"
       # Enables collecting RBD per-image IO statistics by enabling dynamic OSD performance counters. Defaults to false.
       # For reference: https://docs.ceph.com/docs/latest/mgr/prometheus/#rbd-io-statistics
       # enableRBDStats: true
