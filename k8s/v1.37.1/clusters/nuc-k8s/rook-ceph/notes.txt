@@ -43,3 +43,8 @@ k delete ns rook-ceph --force --grace-period=0
 Get Ceph FSID: kubectl -n rook-ceph get secret rook-ceph-mon -o jsonpath='{.data.fsid}' | base64 -d; echo
 Wipe old disk:
 a. Run nuc/virsh/vms/wipe_vdb.sh from nun once to wipe disk for all vm.
+
+Set Ceph Dashboard password:
+echo -n 'YourNewPassword' > /tmp/pw
+ceph dashboard ac-user-set-password admin -i /tmp/pw --force-password
+rm /tmp/pw
