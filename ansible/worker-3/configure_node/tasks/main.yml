@@ -8,3 +8,8 @@
 
 - name: Configure worker node
   include_tasks: configure_worker_node.yaml
+
+- name: Configure chrony
+  include_tasks: setup-chrony.yaml
+  tags:
+    - chrony

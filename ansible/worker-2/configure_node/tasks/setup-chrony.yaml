@@ -1,0 +1,62 @@
+- name: Install chrony
+  become: true
+  package:
+    name: chrony
+    state: present
+  tags:
+    - chrony
+
+- name: Configure chrony servers
+  become: true
+  copy:
+    dest: /etc/chrony/chrony.conf
+    mode: '0644'
+    content: |
+      driftfile /var/lib/chrony/drift
+
+      {% for server in CHRONY_SERVERS %}
+      server {{ server }} iburst
+      {% endfor %}
+
+      makestep 1.0 3
+      rtcsync
+      logdir /var/log/chrony
+  tags:
+    - chrony
+
+- name: Restart chrony
+  become: true
+  service:
+    name: "{{ 'chrony' if ansible_os_family == 'Debian' else 'chronyd' }}"
+    state: restarted
+  tags:
+    - chrony
+
+- name: Enable and start chrony
+  become: true
+  service:
+    name: chronyd
+    enabled: true
+    state: started
+  tags:
+    - chrony
+
+- name: Force time sync
+  command: chronyc -a makestep
+  changed_when: false
+  become: true
+  tags:
+    - chrony
+
+- name: Verify chrony sources
+  command: chronyc sources
+  register: chrony_sources
+  changed_when: false
+  tags:
+    - chrony
+
+- name: Show chrony sources
+  debug:
+    var: chrony_sources.stdout_lines
+  tags:
+    - chrony

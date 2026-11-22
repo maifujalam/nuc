@@ -9,6 +9,9 @@
     USER: vagrant
     MASTER_NODE_IP: 192.168.100.10
     WORKER_NODE_IP: 192.168.100.13
+    CHRONY_SERVERS:
+      - time.google.com
+      - time.cloudflare.com
   roles:
     - download-packages
     - configure_node
