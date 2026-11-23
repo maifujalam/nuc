@@ -38,6 +38,8 @@ Preconfigure:
    - Istio
    - Istio-ingress
    - ArgoCD (Srvice file)
+   - RookCeph
+   - VM
    - 
   
 Get the route details:
