@@ -39,7 +39,7 @@ spec:
           ref: values
         - repoURL: https://github.com/maifujalam/nuc.git
           targetRevision: main
-          path: k8s/v1.37.1/clusters/dev/{{.namespace}}/kubernetes-objects
+          path: k8s/v1.37.1/clusters/nuc-k8s/{{.namespace}}/kubernetes-objects
           directory:
             recurse: true
       destination:
