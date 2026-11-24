@@ -1,0 +1,2 @@
+Add Grafana CRD v5.26.0
+kubectl apply --server-side --force-conflicts -f https://github.com/grafana/grafana-operator/releases/download/v5.26.0/crds.yaml
