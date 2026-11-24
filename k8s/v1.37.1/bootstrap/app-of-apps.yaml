@@ -23,7 +23,7 @@ spec:
         path: '{{.path.path}}'
       destination:
         namespace: argo-cd
-        server: https://kubernetes.default.svc
+        name: nuc-k8s
       syncPolicy:
         automated:
           prune: true
