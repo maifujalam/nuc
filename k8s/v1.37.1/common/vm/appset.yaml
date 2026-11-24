@@ -37,7 +37,7 @@ spec:
         - repoURL: https://github.com/maifujalam/nuc.git
           targetRevision: main
           ref: values
-#         - repoURL: https://github.com/maifujalam/k8s_aws_lite.git
+#         - repoURL: https://github.com/maifujalam/nuc.git
 #           targetRevision: main
 #           path: k8s/v1.36.2/clusters/dev/<sample-app>/kubernetes-objects
 #           directory:

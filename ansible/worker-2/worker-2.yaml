@@ -2,7 +2,7 @@
 - hosts: k8s-worker-2
   become: false
   vars:
-    PROJECT_PATH: k8s_aws_lite  # File will be  created at home directory
+    PROJECT_PATH: nuc  # File will be  created at home directory
     KUBERNETES_MAJOR_VERSION: v1.37
     KUBERNETES_VERSION: 1.37.1  # add 'v' in at prefix whenever required.
     PACKAGE_DIRECTORY: packages

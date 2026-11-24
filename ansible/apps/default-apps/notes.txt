@@ -1,7 +1,7 @@
 ArgoCD
 
 run from the root of the repo:
-cd k8s_aws_lite
+cd nuc
 
 Write vault data to a file:
 ansible-vault view ansible/apps/default-apps/group_vars/all/vault.yml > ~/vault_data.yaml

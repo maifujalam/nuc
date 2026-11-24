@@ -34,7 +34,7 @@ spec:
             valueFiles:
               - $values/{{.path.path}}/helm-config.yaml
             skipCrds: true
-        - repoURL: https://github.com/maifujalam/k8s_aws_lite.git
+        - repoURL: https://github.com/maifujalam/nuc.git
           targetRevision: main
           ref: values
         - repoURL: https://github.com/maifujalam/nuc.git
