@@ -41,12 +41,16 @@ spec:
 #              vault.security.banzaicloud.io/vault-skip-verify: "true"
         spec:
           containers:
-          - name: grafana
-            securityContext:
-              readOnlyRootFilesystem: false
-            env:
-#                - name: GF_SECURITY_ADMIN_USER
-#                  value: vault:secrets/data/dev/grafana/default#user
-#                - name: GF_SECURITY_ADMIN_PASSWORD
-#                  value: vault:secrets/data/dev/grafana/default#password
+            - name: grafana
+              securityContext:
+                readOnlyRootFilesystem: false
+              env:
+  #                - name: GF_SECURITY_ADMIN_USER
+  #                  value: vault:secrets/data/dev/grafana/default#user
+  #                - name: GF_SECURITY_ADMIN_PASSWORD
+  #                  value: vault:secrets/data/dev/grafana/default#password
+          volumes:
+            - name: grafana-data
+              persistentVolumeClaim:
+                claimName: grafana-pvc
   version: 13.0.1
