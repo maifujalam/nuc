@@ -44,6 +44,9 @@ spec:
             - name: grafana
               securityContext:
                 readOnlyRootFilesystem: false
+                runAsUser: 1001
+                runAsGroup: 1001
+                runAsNonRoot: true
               env:
   #                - name: GF_SECURITY_ADMIN_USER
   #                  value: vault:secrets/data/dev/grafana/default#user
