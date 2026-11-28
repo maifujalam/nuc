@@ -5,5 +5,7 @@ virsh destroy sample_default   # if it’s running
 virsh undefine sample_default  # remove definition
 
 
+virsh console worker-3_worker-3
+
 Ditach sidk from vm: sudo virsh detach-disk master_master vdb --config
 

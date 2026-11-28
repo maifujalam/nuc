@@ -4,6 +4,10 @@ packer {
       source  = "github.com/hashicorp/qemu"
       version = ">= 1.1.0"
     }
+    vagrant = {
+      source  = "github.com/hashicorp/vagrant"
+      version = ">= 1.1.0"
+    }
   }
 }
 
@@ -50,12 +54,19 @@ source "qemu" "k8s" {
 
 build {
   sources = ["source.qemu.k8s"]
-
+  provisioner "shell" {
+    script = "network.sh"
+  }
   provisioner "shell" {
     script = "install-k8s.sh"
   }
-
   provisioner "shell" {
     script = "cleanup.sh"
+  }
+  post-processor "vagrant" {
+    provider_override    = "libvirt"
+    compression_level    = 6
+    output               = "boxes/ubuntu-26.04-k8s-{{.Provider}}.box"
+    keep_input_artifact  = true
   }
 }

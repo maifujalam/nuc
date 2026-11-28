@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Note: This is depricated as packer inbuildplugin "vagrant" is used to create the box.
+# This script is kept for reference.
+
 set -euo pipefail
 
 BOX_NAME="k8s-nuc"      # Name of the box to be created

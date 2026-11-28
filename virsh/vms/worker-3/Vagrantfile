@@ -1,5 +1,5 @@
-IMAGE       = "generic/ubuntu2204"
-BOX_VERSION = "4.3.12"
+IMAGE       = "k8s-nuc"
+BOX_VERSION = "0"
 NAME        = "worker-3"
 CPU         = 4
 MEMORY      = 8192
