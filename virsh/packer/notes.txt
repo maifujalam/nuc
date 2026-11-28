@@ -40,12 +40,36 @@ packer validate k8s-nuc.pkr.hcl
 4. Build the packer image:
 packer build -force .  [only on nuc]
 
-5. Create vagrant box of the packer image:
-chmod +x create_vagrant_box.sh
-./create_vagrant_box.sh
 
-6. Once the box is created,add the box to vagrant:
-vagrant box add k8s-nuc.box --name k8s-nuc
+5. Add the packer image to libvirt:
+vagrant box add boxes/ubuntu-26.04-k8s-libvirt.box --name=nuc-vm --force
 
 
 
+Disk Expansion on live VM:
+
+A. For vda:
+1. Chekc the vm state: virsh domstate worker-3_worker-3
+2. List the disks attached to the VM: virsh domblklist worker-3_worker-3
+3. Get information about the vda disk: virsh domblkinfo worker-3_worker-3 vda --human
+4. Expand the disk: virsh blockresize worker-3_worker-3 vda 21G
+
+Resize the partition and filesystem inside the VM:
+1. Connect to the VM: virsh console worker-3_worker-3
+2. Check the disk size: lsblk
+3. Resize the partition: sudo growpart /dev/vda 1
+4. Resize the filesystem: sudo resize2fs /dev/vda1
+5. Verify the new size: lsblk -f
+
+B. For vdb:
+1. Check the vm state: virsh domstate worker-3_worker-3
+2. List the disks attached to the VM: virsh domblklist worker-3_worker-3
+3. Get information about the vdb disk: virsh domblkinfo worker-3_worker-3 vdb --human
+4. Expand the disk: virsh blockresize worker-3_worker-3 vdb 21G
+
+Resize the partition and filesystem inside the VM:
+1. Connect to the VM: virsh console worker-3_worker-3
+2. Check the disk size: lsblk
+3. Resize the partition: sudo growpart /dev/vdb 1
+4. Resize the filesystem: sudo resize2fs /dev/vdb1
+5. Verify the new size: lsblk -f

@@ -20,6 +20,8 @@ $APT full-upgrade
 # containerd/runc are NOT installed from apt: Ubuntu's packages lag upstream.
 $APT install \
   ansible \
+  iputils-ping \
+  htop \
   build-essential \
   unzip \
   tree \
@@ -128,8 +130,67 @@ $APT install \
   "kubectl=${K8S_PKG_VERSION}"
 sudo apt-mark hold kubelet kubeadm kubectl
 
-sudo systemctl enable kubelet
+# ---------------------------------------------------------------- vagrant support
 
+# Ensure SSH server is installed
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server
+
+# Enable SSH
+sudo systemctl enable ssh
+
+# Create vagrant user if missing
+if ! id vagrant >/dev/null 2>&1; then
+    sudo useradd -m -s /bin/bash vagrant
+fi
+
+# Set password
+echo "vagrant:vagrant" | sudo chpasswd
+
+# Passwordless sudo
+cat <<EOF | sudo tee /etc/sudoers.d/vagrant
+vagrant ALL=(ALL) NOPASSWD:ALL
+EOF
+
+sudo chmod 440 /etc/sudoers.d/vagrant
+
+# Install standard Vagrant insecure public key
+sudo mkdir -p /home/vagrant/.ssh
+
+cat <<'EOF' | sudo tee /home/vagrant/.ssh/authorized_keys
+ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN1YdxBpNlzxDqfJyw/QKow1F+wvG9hXGoqiysfJOn5Y vagrant insecure public key
+EOF
+
+sudo chown -R vagrant:vagrant /home/vagrant/.ssh
+sudo chmod 700 /home/vagrant/.ssh
+sudo chmod 600 /home/vagrant/.ssh/authorized_keys
+# Enable cloud-init regeneration of host keys for cloned VMs
+sudo rm -f /etc/ssh/ssh_host_*
+
+cat <<EOF | sudo tee /etc/cloud/cloud.cfg.d/99-ssh-hostkeys.cfg
+ssh_deletekeys: true
+ssh_genkeytypes:
+  - rsa
+  - ecdsa
+  - ed25519
+EOF
+
+# Generate SSH host keys if missing
+sudo ssh-keygen -A
+
+# Verify SSH configuration
+sudo sshd -t
+
+sudo systemctl enable ssh
+
+# Clean cloud-init state so each VM gets fresh metadata
+sudo cloud-init clean --logs --seed
+
+# Enable services
+sudo systemctl enable containerd
+sudo systemctl enable kubelet
+sudo systemctl enable ssh
+sudo systemctl enable kubelet
 # ---------------------------------------------------------------- sanity checks
 containerd --version
 runc --version

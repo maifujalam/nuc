@@ -1,4 +1,4 @@
-IMAGE       = "k8s-nuc"
+IMAGE       = "nuc-vm"
 BOX_VERSION = "0"
 NAME        = "worker-3"
 CPU         = 4
