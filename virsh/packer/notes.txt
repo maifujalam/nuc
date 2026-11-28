@@ -26,6 +26,7 @@ a. vi http/meta-data.yaml
 instance-id: k8s-nuc
 local-hostname: k8s-nuc
 
+CREATE PACKER IMAGE:
 1. Download the ubuntu cloud image:
 wget https://cloud-images.ubuntu.com/minimal/releases/resolute/release/ubuntu-26.04-minimal-cloudimg-amd64v3.img
 
@@ -42,6 +43,9 @@ packer build -force .  [only on nuc]
 5. Create vagrant box of the packer image:
 chmod +x create_vagrant_box.sh
 ./create_vagrant_box.sh
+
+6. Once the box is created,add the box to vagrant:
+vagrant box add k8s-nuc.box --name k8s-nuc
 
 
 
