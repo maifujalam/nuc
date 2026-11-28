@@ -23,6 +23,10 @@ Vagrant.configure("2") do |config|
       libvirt.cpus   = CPU
       libvirt.mgmt_attach = false
 
+      libvirt.machine_virtual_size = 20
+
+      libvirt.mgmt_attach = false
+
       # Disable graphics completely
       libvirt.graphics_type = "none"
       libvirt.graphics_autoport = false

@@ -1,0 +1,47 @@
+Prerequisites:
+Create cloud init user-data.yaml file with the following content:
+1. mkdir -p http
+2. vi http/user-data.yaml
+#cloud-config
+
+users:
+  - default
+
+ssh_pwauth: true
+
+chpasswd:
+  list: |
+    ubuntu:ubuntu
+  expire: false
+
+packages:
+  - qemu-guest-agent
+
+runcmd:
+  - systemctl enable ssh
+  - systemctl start ssh
+
+3. Create cloudinit meta-data.yaml file with the following content:
+a. vi http/meta-data.yaml
+instance-id: k8s-nuc
+local-hostname: k8s-nuc
+
+1. Download the ubuntu cloud image:
+wget https://cloud-images.ubuntu.com/minimal/releases/resolute/release/ubuntu-26.04-minimal-cloudimg-amd64v3.img
+
+2. Initialize the packer:
+packer init .
+
+3.Validate the packer configuration:
+packer fmt k8s-nuc.pkr.hcl
+packer validate k8s-nuc.pkr.hcl
+
+4. Build the packer image:
+packer build -force .  [only on nuc]
+
+5. Create vagrant box of the packer image:
+chmod +x create_vagrant_box.sh
+./create_vagrant_box.sh
+
+
+

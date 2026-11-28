@@ -1,0 +1,52 @@
+#!/bin/bash
+
+set -euo pipefail
+
+BOX_NAME="k8s-nuc"
+OUTPUT_DIR="output-k8s"
+WORK_DIR="vagrant-box"
+
+echo "Cleaning workspace..."
+rm -rf "${WORK_DIR}"
+mkdir -p "${WORK_DIR}"
+
+echo "Copying image..."
+cp -v "${OUTPUT_DIR}/k8s-nuc" "${WORK_DIR}/box.img"
+
+echo "Creating metadata.json..."
+cat > "${WORK_DIR}/metadata.json" <<EOF
+{
+  "provider": "libvirt",
+  "format": "qcow2",
+  "virtual_size": 20
+}
+EOF
+
+echo "Creating Vagrantfile..."
+cat > "${WORK_DIR}/Vagrantfile" <<EOF
+Vagrant.configure("2") do |config|
+end
+EOF
+
+echo "Creating box package..."
+
+cd "${WORK_DIR}"
+
+tar czf "../${BOX_NAME}.box" \
+    box.img \
+    metadata.json \
+    Vagrantfile
+
+cd ..
+
+echo
+echo "Box created successfully:"
+echo "  ${BOX_NAME}.box"
+echo
+
+echo "Contents:"
+tar tzf "${BOX_NAME}.box"
+
+echo
+echo "Add to Vagrant with:"
+echo "  vagrant box add --name ${BOX_NAME} ${BOX_NAME}.box"
